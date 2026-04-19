@@ -9,10 +9,16 @@ struct HabitaApp: App {
     
     init() {
         do {
+            // Configure CloudKit container (optional sync - can work offline)
+            let cloudKitConfig = ModelConfiguration(
+                isStoredInMemoryOnly: false,
+                cloudKitDatabase: .automatic
+            )
+            
             // Initialize ModelContainer with CloudKit support
             modelContainer = try ModelContainer(
                 for: HabitaTask.self, Habit.self, HabitLog.self, WinsTracker.self,
-                configurations: ModelConfiguration(isStoredInMemoryOnly: false)
+                configurations: cloudKitConfig
             )
             
             // Initialize WinsTracker if it doesn't exist
@@ -42,7 +48,7 @@ struct HabitaApp: App {
             .modelContainer(modelContainer)
             .environment(appState)
             .environment(cloudKitService)
-            .preferredColorScheme(appState.darkModeSetting.userInterfaceStyle == .unspecified ? nil : appState.darkModeSetting.userInterfaceStyle == .dark)
+            .preferredColorScheme(appState.darkModeSetting.userInterfaceStyle == .unspecified ? nil : (appState.darkModeSetting.userInterfaceStyle == .dark ? .dark : .light))
         }
     }
 }

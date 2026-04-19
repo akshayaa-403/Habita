@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 
 /// AppState manages app-level state including onboarding and user preferences
 /// Uses @Observable for SwiftUI integration without @State wrapper
