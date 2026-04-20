@@ -1,50 +1,33 @@
-# Xcode
+# Development
+node_modules/
+npm-debug.log
+yarn-error.log
+dist/
 build/
-*.pbxuser
-*.mode1v3
-*.mode2v3
-*.perspectivev3
-*.xcworkspace
-xcuserdata/
-*.xcodeproj/xcuserdata/
-*.xcodeproj/project.xcworkspace/xcuserdata/
-DerivedData/
-*.hmap
-*.ipa
-*.dSYM.zip
-*.dSYM
-
-# Swift Package Manager
-.swiftpm
-Package.resolved
-
-# CocoaPods
-Pods/
-Podfile.lock
-
-# Carthage
-Carthage/Build
-
-# Xcode
-.DS_Store
-*.swp
-*~
-*.xcarchive
 
 # IDE
 .vscode/
+.idea/
 *.sublime-project
 *.sublime-workspace
-.idea/
+.DS_Store
+
+# OS
+Thumbs.db
+.DS_Store
+.AppleDouble
+.LSOverride
 
 # Environment
 .env
 .env.local
-*.pem
+.env.*.local
 
-# OS
-.DS_Store
-Thumbs.db
+# Backup
+*.backup
+*.bak
+*~
 
-# App-specific
-.xcodeproj/
+# Browser
+.history/
+.cache/
