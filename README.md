@@ -41,12 +41,53 @@ Track your daily habits without build steps, servers, or complexity. Everything 
 ## Project Structure
 
 ```
-habita/
-├── index.html      # main page structure
-├── style.css       # styles (light & dark)
-├── script.js       # all application logic
-└── README.md       # you are here
+Habita/
+├── 📄 index.html               # Main web app entry point (GitHub Pages root)
+├── 📁 src/
+│   ├── app.js                  # Application controller (750+ lines)
+│   ├── models.js               # Data model classes (250+ lines)
+│   └── storage.js              # LocalStorage persistence layer (250+ lines)
+│
+├── 📁 styles/
+│   └── main.css                # All styling & responsive design (1200+ lines)
+│
+├── 📁 docs/
+│   └── MIGRATION.md            # iOS to Web migration documentation
+│
+├── 📄 README.md                # This file
+├── 📄 LICENSE                  # MIT License
+└── 📄 .gitignore               # Git configuration
 ```
+
+### Directory Guide
+
+| Item | Contents | Purpose |
+|------|----------|---------|
+| **index.html** | Main HTML file | GitHub Pages entry point (served at repository root) |
+| **src/** | `app.js`, `models.js`, `storage.js` | JavaScript application logic and data models |
+| **styles/** | `main.css` | CSS stylesheets with responsive design and dark mode |
+| **docs/** | `MIGRATION.md`, etc. | Project documentation and guides |
+
+---
+
+## 🚀 GitHub Pages Deployment
+
+This repository is configured for GitHub Pages deployment from the main branch at the repository root.
+
+**Configuration:**
+- ✅ `index.html` at repository root
+- ✅ Asset paths use relative URLs (e.g., `styles/main.css`, `src/app.js`)
+- ✅ No build process needed
+- ✅ Automatic deployment on push to main
+
+**To enable GitHub Pages:**
+1. Go to repository **Settings** → **Pages**
+2. Set **Source** to `Deploy from a branch`
+3. Select **Branch**: `main`
+4. Select **Folder**: `/ (root)`
+5. Click **Save**
+
+Your app will be live at: `https://akshayaa-403.github.io/Habita/`
 
 ---
 
