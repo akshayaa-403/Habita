@@ -5,8 +5,6 @@ Track your daily habits without build steps, servers, or complexity. Everything 
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg) ![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white) ![CSS3](https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white) ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black)
 
----
-
 ## Features
 
 - **Add habits** – give each habit a name and an optional emoji/icon  
@@ -14,8 +12,6 @@ Track your daily habits without build steps, servers, or complexity. Everything 
 - **Streaks & totals** – see your current streak and total completions for each habit  
 - **Dark mode** – toggle between light and dark themes  
 - **Local storage** – all data stays in your browser; refresh or close the tab, your habits persist  
-
----
 
 ## Quick Start
 
@@ -42,21 +38,21 @@ Track your daily habits without build steps, servers, or complexity. Everything 
 
 ```
 Habita/
-├── 📄 index.html               # Main web app entry point (GitHub Pages root)
-├── 📁 src/
+├── index.html               # Main web app entry point (GitHub Pages root)
+├── src/
 │   ├── app.js                  # Application controller (750+ lines)
 │   ├── models.js               # Data model classes (250+ lines)
 │   └── storage.js              # LocalStorage persistence layer (250+ lines)
 │
-├── 📁 styles/
+├── styles/
 │   └── main.css                # All styling & responsive design (1200+ lines)
 │
-├── 📁 docs/
+├── docs/
 │   └── MIGRATION.md            # iOS to Web migration documentation
 │
-├── 📄 README.md                # This file
-├── 📄 LICENSE                  # MIT License
-└── 📄 .gitignore               # Git configuration
+├── README.md                # This file
+├── LICENSE                  # MIT License
+└── .gitignore               # Git configuration
 ```
 
 ### Directory Guide
@@ -70,15 +66,15 @@ Habita/
 
 ---
 
-## 🚀 GitHub Pages Deployment
+## GitHub Pages Deployment
 
 This repository is configured for GitHub Pages deployment from the main branch at the repository root.
 
 **Configuration:**
-- ✅ `index.html` at repository root
-- ✅ Asset paths use relative URLs (e.g., `styles/main.css`, `src/app.js`)
-- ✅ No build process needed
-- ✅ Automatic deployment on push to main
+- `index.html` at repository root
+- Asset paths use relative URLs (e.g., `styles/main.css`, `src/app.js`)
+- No build process needed
+- Automatic deployment on push to main
 
 **To enable GitHub Pages:**
 1. Go to repository **Settings** → **Pages**
@@ -91,6 +87,6 @@ Your app will be live at: `https://akshayaa-403.github.io/Habita/`
 
 ---
 
-## 📄 License
+## License
 
 Distributed under the MIT License. See `LICENSE` file for more information.
