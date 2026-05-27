@@ -1,0 +1,409 @@
+/* ========== CSS Variables & Base ========== */
+:root {
+  --bg: #f5f3f0;
+  --surface: #ffffff;
+  --text: #2d2d2d;
+  --text-secondary: #555;
+  --shadow: 0 8px 30px rgba(0,0,0,0.08);
+  --border: rgba(0,0,0,0.06);
+  --btn-bg: #fff;
+  --btn-hover: #f0f0f0;
+  --overlay: rgba(0,0,0,0.5);
+
+  /* Quadrant pastel colors (light) */
+  --q1: #f9c6c6;  /* pastel red */
+  --q2: #c6e5c6;  /* pastel green */
+  --q3: #fdf0b0;  /* pastel yellow */
+  --q4: #b3d4f0;  /* pastel blue */
+
+  --q1-text: #a33;
+  --q2-text: #285e28;
+  --q3-text: #8b7d1a;
+  --q4-text: #1d5280;
+
+  /* Task list page light background (even lighter) */
+  --q1-light: #fde8e8;
+  --q2-light: #e6f5e6;
+  --q3-light: #fefae0;
+  --q4-light: #d8eaf8;
+
+  transition: background 0.3s, color 0.3s;
+}
+
+body.dark-mode {
+  --bg: #1a1a1a;
+  --surface: #2b2b2b;
+  --text: #eaeaea;
+  --text-secondary: #aaa;
+  --shadow: 0 8px 30px rgba(0,0,0,0.4);
+  --border: rgba(255,255,255,0.08);
+  --btn-bg: #3a3a3a;
+  --btn-hover: #4a4a4a;
+  --overlay: rgba(0,0,0,0.7);
+
+  --q1: #b74e4e;
+  --q2: #4e7a4e;
+  --q3: #b8a84e;
+  --q4: #4e6e9a;
+
+  --q1-light: #5c3232;
+  --q2-light: #2d422d;
+  --q3-light: #4b4428;
+  --q4-light: #283b4f;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  overflow: hidden;
+  user-select: none;
+  display: flex;
+  flex-direction: column;
+  transition: background 0.3s, color 0.3s;
+}
+
+/* ========== Dark Mode Toggle ========== */
+.dark-mode-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: background 0.2s;
+}
+.dark-mode-toggle:hover { background: var(--btn-hover); }
+.dark-mode-toggle svg { width: 24px; height: 24px; fill: var(--text); }
+
+/* ========== Main Matrix Container ========== */
+.matrix-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+.matrix-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  position: relative;
+}
+
+.quadrant {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: filter 0.15s, transform 0.1s;
+  overflow: hidden;
+}
+.quadrant:hover { filter: brightness(0.97); }
+.quadrant:active { transform: scale(0.98); }
+
+/* Quadrant backgrounds */
+.q1 { background: var(--q1); }
+.q2 { background: var(--q2); }
+.q3 { background: var(--q3); }
+.q4 { background: var(--q4); }
+
+/* Labels (optional subtle text) */
+.quadrant-label {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  font-size: 0.8rem;
+  opacity: 0.8;
+  font-weight: 500;
+  color: var(--q1-text);
+}
+.q2 .quadrant-label { color: var(--q2-text); }
+.q3 .quadrant-label { color: var(--q3-text); }
+.q4 .quadrant-label { color: var(--q4-text); }
+
+/* ========== Progress Ring (Bigger, white text, Helvetica) ========== */
+.progress-container {
+  position: relative;
+  width: 100px;      /* increased from 80px */
+  height: 100px;
+}
+.progress-ring {
+  transform: rotate(-90deg);
+  width: 100px;
+  height: 100px;
+}
+.progress-ring-bg {
+  fill: none;
+  stroke: rgba(255,255,255,0.5);
+  stroke-width: 6;
+}
+.progress-ring-fill {
+  fill: none;
+  stroke: var(--text);
+  stroke-width: 6;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.6s ease;
+}
+.remaining-number {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.8rem;  /* slightly larger */
+  font-weight: 700;
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  color: white;        /* white in all themes */
+}
+.total-text {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.75rem;
+  opacity: 0.9;
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  color: white;
+}
+
+/* ========== Central Plus Button ========== */
+.plus-button {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 64px;
+  height: 64px;
+  background: var(--surface);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  cursor: grab;
+  z-index: 20;
+  transition: box-shadow 0.2s, transform 0.1s;
+  user-select: none;
+  border: 2px solid var(--border);
+}
+.plus-button:active { cursor: grabbing; }
+.plus-button.dragging {
+  box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+  transform: translate(-50%, -50%) scale(1.1);
+  transition: none;
+}
+.plus-button svg {
+  width: 36px;
+  height: 36px;
+  fill: var(--text);
+}
+
+/* ========== Task List Page ========== */
+.task-list-page {
+  display: none;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--surface);
+  padding: 20px;
+  animation: fadeSlideIn 0.3s ease;
+}
+.task-list-page.active {
+  display: flex;
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.task-list-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.back-btn {
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  cursor: pointer;
+  color: var(--text);
+  margin-right: 16px;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+.back-btn:hover { background: var(--btn-hover); }
+.task-list-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  flex: 1;
+}
+.task-count-badge {
+  background: var(--border);
+  border-radius: 12px;
+  padding: 4px 12px;
+  font-size: 0.9rem;
+}
+
+.task-items {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+/* Task item with drag handle, checkbox, text, and delete button */
+.task-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 8px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  transition: background 0.2s;
+  border-radius: 8px;
+  margin-bottom: 4px;
+  position: relative;   /* for absolute positioning of delete btn */
+}
+.task-item.drag-over {
+  background: var(--btn-hover);
+  outline: 2px dashed var(--text-secondary);
+}
+.drag-handle {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  cursor: grab;
+  padding: 4px;
+  margin-right: 8px;
+  color: #999;
+}
+.drag-handle:active { cursor: grabbing; }
+.dot-row {
+  display: flex;
+  gap: 3px;
+}
+.dot {
+  width: 5px;
+  height: 5px;
+  background: #aaa;
+  border-radius: 50%;
+}
+
+.task-checkbox {
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--text-secondary);
+  border-radius: 6px;
+  margin-right: 12px;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.task-checkbox:checked {
+  background: var(--text);
+  border-color: var(--text);
+}
+.task-checkbox:checked::after {
+  content: '✓';
+  color: var(--surface);
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.task-text {
+  flex: 1;
+  font-size: 1rem;
+  word-break: break-word;
+  cursor: default;
+}
+.task-text.completed {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+.task-text[contenteditable="true"] {
+  outline: none;
+  border-bottom: 2px dashed var(--text-secondary);
+  cursor: text;
+  background: var(--btn-hover);
+  border-radius: 4px;
+  padding: 2px 4px;
+}
+
+/* Delete button for tasks */
+.task-delete-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  margin-left: 8px;
+  opacity: 0.5;
+  transition: opacity 0.2s, background 0.2s;
+}
+.task-delete-btn:hover {
+  opacity: 1;
+  background: var(--btn-hover);
+  color: #e55;
+}
+
+.add-task-btn {
+  margin-top: 16px;
+  padding: 12px;
+  background: var(--btn-bg);
+  border: 2px dashed var(--border);
+  border-radius: 10px;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.add-task-btn:hover { background: var(--btn-hover); }
+
+/* ========== Splash Animation ========== */
+.splash-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.splash-circle {
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  animation: splashAnim 0.5s ease-out forwards;
+}
+@keyframes splashAnim {
+  0% { width: 0; height: 0; opacity: 0.8; }
+  100% { width: 200vmax; height: 200vmax; opacity: 0; }
+}
+
+/* ========== Scrollbar styling ========== */
+.task-items::-webkit-scrollbar { width: 6px; }
+.task-items::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* ========== Responsive ========== */
+@media (max-width: 600px) {
+  .progress-container { width: 80px; height: 80px; }
+  .progress-ring { width: 80px; height: 80px; }
+  .remaining-number { font-size: 1.4rem; }
+}
