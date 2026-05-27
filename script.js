@@ -4,7 +4,6 @@
   const STORAGE_KEY = 'habita_tasks';
   const DARK_MODE_KEY = 'habita_dark_mode';
 
-  // tasks = { q1: [], q2: [], q3: [], q4: [] }
   let tasks = loadTasks();
 
   function loadTasks() {
@@ -84,9 +83,9 @@
   const darkModeToggle = document.getElementById('darkModeToggle');
 
   let currentQuadrant = null; // 1-4 when task list is open
-  let quickAddMode = false;   // if the task list was opened via plus button drag
+  let quickAddMode = false;
 
-  // ---------- Theme ----------
+  // ---------- Theme (Task 6 fixed SVG paths) ----------
   function applyDarkMode(enabled) {
     if (enabled) {
       document.body.classList.add('dark-mode');
@@ -96,6 +95,8 @@
       darkModeToggle.querySelector('svg').innerHTML = '<path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/>';
     }
     localStorage.setItem(DARK_MODE_KEY, enabled);
+    // Re-render rings to update stroke colour if needed
+    renderProgressRings();
   }
 
   const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -108,28 +109,29 @@
     applyDarkMode(darkMode);
   });
 
-  // ---------- Progress Rings Rendering ----------
+  // ---------- Progress Rings (Task 1: 130px, r=57) ----------
   function renderProgressRings() {
     for (let q = 1; q <= 4; q++) {
       const container = document.getElementById('progress' + q);
       const { total, completed, remaining } = getProgress(q);
-      // circumference = 2 * π * r, with r=44 (since viewBox 0 0 100 100)
-      const r = 44;
+      const r = 57;  // for viewBox 0 0 130 130
       const circumference = 2 * Math.PI * r;
       const offset = total === 0 ? circumference : circumference * (1 - completed / total);
       container.innerHTML = `
-        <svg class="progress-ring" viewBox="0 0 100 100">
-          <circle class="progress-ring-bg" cx="50" cy="50" r="${r}"/>
-          <circle class="progress-ring-fill" cx="50" cy="50" r="${r}"
+        <svg class="progress-ring" viewBox="0 0 130 130">
+          <circle class="progress-ring-bg" cx="65" cy="65" r="${r}"/>
+          <circle class="progress-ring-fill" cx="65" cy="65" r="${r}"
                   stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"/>
         </svg>
         <div class="remaining-number">${remaining}</div>
         <div class="total-text">/ ${total}</div>
       `;
+      // ARIA label (Task 9)
+      container.setAttribute('aria-label', `${remaining} tasks remaining out of ${total}`);
     }
   }
 
-  // ---------- Task List Page Rendering ----------
+  // ---------- Task List Rendering (Task 7: drag handle fix) ----------
   function renderTaskList(quadrant) {
     const list = getTasks(quadrant);
     taskItemsContainer.innerHTML = '';
@@ -140,7 +142,7 @@
       item.dataset.index = index;
       item.dataset.id = task.id;
 
-      // Drag handle (6 grey dots)
+      // Drag handle (6 grey dots) – Task 7: restore missing dots
       const handle = document.createElement('div');
       handle.className = 'drag-handle';
       handle.innerHTML = '<div class="dot-row"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div><div class="dot-row"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>';
@@ -188,7 +190,7 @@
       });
       item.appendChild(textSpan);
 
-      // Delete button (new)
+      // Delete button
       const deleteBtn = document.createElement('button');
       deleteBtn.className = 'task-delete-btn';
       deleteBtn.innerHTML = '🗑';
@@ -258,16 +260,21 @@
     draggedIndex = null;
   }
 
-  // ---------- Navigation & Splash ----------
+  // ---------- Navigation & Splash (Task 4: full-screen color, slower) ----------
   function playSplashAnimation(quadrantColorVar, callback) {
-    const circle = document.createElement('div');
-    circle.className = 'splash-circle';
-    circle.style.backgroundColor = `var(${quadrantColorVar})`;
-    splashOverlay.innerHTML = '';
-    splashOverlay.appendChild(circle);
-    splashOverlay.style.display = 'flex';
-    circle.addEventListener('animationend', () => {
+    // Use the overlay as a full-screen coloured background
+    splashOverlay.style.display = 'block';
+    splashOverlay.style.background = `var(${quadrantColorVar})`;
+    splashOverlay.style.animation = 'none';
+    // Force reflow
+    void splashOverlay.offsetWidth;
+    splashOverlay.style.animation = 'splashFadeIn 0.8s ease-out forwards';
+
+    splashOverlay.addEventListener('animationend', function handler() {
       splashOverlay.style.display = 'none';
+      splashOverlay.style.animation = '';
+      splashOverlay.style.background = '';
+      splashOverlay.removeEventListener('animationend', handler);
       if (callback) callback();
     }, { once: true });
   }
@@ -303,7 +310,7 @@
           if (lastItem) {
             const textSpan = lastItem.querySelector('.task-text');
             if (textSpan) {
-              textSpan.dblclick(); // simulate double-click to edit
+              textSpan.dblclick();
             }
           }
         }, 100);
@@ -399,13 +406,21 @@
     }
   });
 
-  // Prevent click event after drag
   plusButton.addEventListener('click', (e) => {
     if (isDraggingPlus || plusButton.classList.contains('dragging')) {
       e.stopPropagation();
       e.preventDefault();
     }
   });
+
+  // ---------- ARIA Labels (Task 9) ----------
+  document.querySelectorAll('.quadrant').forEach(q => {
+    const num = q.dataset.quadrant;
+    const label = q.querySelector('.quadrant-label').textContent;
+    q.setAttribute('aria-label', `${label} quadrant, click to view tasks`);
+  });
+  plusButton.setAttribute('aria-label', 'Drag to add task to a quadrant');
+  darkModeToggle.setAttribute('aria-label', 'Toggle dark mode');
 
   // ---------- Initial Render ----------
   renderProgressRings();
