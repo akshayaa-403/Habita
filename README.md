@@ -1,36 +1,58 @@
 # Habita
 
-**A simple, no‑frills habit tracker**  
-Track your daily habits without build steps, servers, or complexity. Everything runs locally in your browser – your data stays with you.
+![License](https://img.shields.io/badge/License-MIT-blue.svg) ![JavaScript](https://img.shields.io/badge/JavaScript-ES6-yellow.svg) ![HTML5](https://img.shields.io/badge/HTML5-E34F26.svg?logo=html5&logoColor=white) ![CSS3](https://img.shields.io/badge/CSS3-1572B6.svg?logo=css3&logoColor=white) ![LocalStorage](https://img.shields.io/badge/storage-localStorage-brightgreen.svg) ![Status](https://img.shields.io/badge/status-production-important.svg)
 
-![License: MIT](https://img.shields.io/badge/License-MIT-green.svg) ![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white) ![CSS3](https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white) ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black)
+Habita is a visual task manager based on the Eisenhower Matrix that organizes tasks into four urgency-importance quadrants. It eliminates scattered to-do lists, helping you focus on what truly matters and ship high-impact work faster — all with drag-and-drop, dark mode, and persistent local storage.
 
 ## Features
 
-- **Add habits** – give each habit a name and an optional emoji/icon  
-- **Daily check‑off** – mark habits as done for the current day  
-- **Streaks & totals** – see your current streak and total completions for each habit  
-- **Dark mode** – toggle between light and dark themes  
-- **Local storage** – all data stays in your browser; refresh or close the tab, your habits persist  
-
-## Quick Start
-
-**Clone the repository**  
-   ```bash
-   git clone https://github.com/yourusername/habita.git
-   cd habita
-   ```
+| Feature                    | Description                                                                                           |
+|----------------------------|-------------------------------------------------------------------------------------------------------|
+| **Quadrant Matrix View**   | Four colour‑coded boards: `Urgent & High`, `Not Urgent & High`, `Urgent & Low`, `Not Urgent & Low`. Click any quadrant to drill down. |
+| **Live Progress Rings**    | Each quadrant shows an SVG progress ring with the number of remaining tasks. Updates instantly as you check or add tasks. |
+| **Drag & Drop Reordering** | Inside any task list, reorder tasks by dragging the six‑dot handle. No accidental moves – only intentional reordering. |
+| **Inline Task Editing**    | Double‑click any task name to edit it inline. Press Enter or blur to save.                            |
+| **Dark Mode**              | Toggle between light and dark themes. Respects system preference on first visit and stores your choice in `localStorage`. |
+| **Splash Animation**       | Entering a quadrant triggers a subtle full‑screen splash animation for smooth visual feedback.       |
+| **Persistent Storage**     | All tasks and theme settings are saved automatically in the browser’s `localStorage`. Refresh or close – your data stays. |
 
 ---
 
-## Usage
+## Tech Stack
 
-1. **Add a new habit** – type a name and pick an icon, then click “Add”.  
-2. **Check off today** – click the circle or checkbox next to a habit to mark it as complete.  
-3. **View progress** – each habit card shows your current streak (consecutive days) and total completions.  
-4. **Dark mode** – click the sun/moon icon in the header to switch themes.  
+| Layer       | Technology                                                          |
+|-------------|---------------------------------------------------------------------|
+| Structure   | HTML5                                                               |
+| Styling     | CSS3 (Grid, Flexbox, CSS Variables, transitions)                    |
+| Behaviour   | Vanilla JavaScript (ES6)                                            |
+| Graphics    | SVG + canvas‑like ring drawing                                      |
+| Persistence | Web LocalStorage API                                                |
 
-> **Note**: Data is saved automatically to `localStorage`. Clearing your browser data will remove your habits.
+---
+
+## Getting Started
+
+### Clone & Run
+
+```bash
+git clone https://github.com/akshayaa-403/Habita.git
+cd Habita
+```
+
+No installation required. Serve the folder with any static server:
+
+```bash
+# Python 3
+python -m http.server 8000
+
+# Python 2
+python -m SimpleHTTPServer 8000
+
+# Node.js (npx)
+npx serve
+```
+
+Then visit `http://localhost:8000` in your browser.
 
 ---
 
@@ -38,55 +60,42 @@ Track your daily habits without build steps, servers, or complexity. Everything 
 
 ```
 Habita/
-├── index.html               # Main web app entry point (GitHub Pages root)
-├── src/
-│   ├── app.js                  # Application controller (750+ lines)
-│   ├── models.js               # Data model classes (250+ lines)
-│   └── storage.js              # LocalStorage persistence layer (250+ lines)
-│
-├── styles/
-│   └── main.css                # All styling & responsive design (1200+ lines)
-│
-├── docs/
-│   └── MIGRATION.md            # iOS to Web migration documentation
-│
-├── README.md                # This file
-├── LICENSE                  # MIT License
-└── .gitignore               # Git configuration
+├── index.html             # Main entry point
+├── css/
+│   └── styles.css         # Light/dark themes, quadrant grid, responsive layout
+├── js/
+│   ├── main.js            # Initialises theme, UI, and progress rings
+│   ├── theme.js           # Dark mode logic, localStorage sync, system preference
+│   ├── storage.js         # loadTasks() / saveTasks() wrappers
+│   ├── tasks.js           # CRUD, completion toggling, reordering, counts
+│   ├── ui.js              # Task list rendering, drag‑and‑drop, inline editing, navigation
+│   └── progress.js        # SVG progress ring drawing and animation
+├── LICENSE                # MIT License
+└── .gitignore
 ```
 
-### Directory Guide
+---
 
-| Item | Contents | Purpose |
-|------|----------|---------|
-| **index.html** | Main HTML file | GitHub Pages entry point (served at repository root) |
-| **src/** | `app.js`, `models.js`, `storage.js` | JavaScript application logic and data models |
-| **styles/** | `main.css` | CSS stylesheets with responsive design and dark mode |
-| **docs/** | `MIGRATION.md`, etc. | Project documentation and guides |
+## How to Use
+
+1. **Start at the matrix** – You see four quadrants with progress rings.  
+2. **Add a task** – Tap the central **+** button and drag it onto a quadrant. Or enter a quadrant and click **"+ Add Task"**.  
+3. **Complete a task** – Tick the checkbox inside any task row.  
+4. **Edit a task** – Double‑click the task text, type a new name, and press Enter.  
+5. **Delete a task** – Click the trash bin icon.  
+6. **Reorder tasks** – Drag the **⋮⋮** handle vertically.  
+7. **Toggle dark mode** – Click the sun/moon icon in the top‑right corner.  
+8. **Track progress** – The outer ring fills in proportion to completed tasks; the inner count shows how many are left.
 
 ---
 
-## GitHub Pages Deployment
+## Design Highlights
 
-This repository is configured for GitHub Pages deployment from the main branch at the repository root.
+- **Smooth transitions** – Theme switch and splash animation feel fluid.  
+- **Responsive grid** – Quadrants wrap on narrow screens.  
+- **Accessible contrast** – Both light and dark modes meet readability standards.  
+- **No external fonts** – Uses system‑default sans‑serif for fast loading.  
 
-**Configuration:**
-- `index.html` at repository root
-- Asset paths use relative URLs (e.g., `styles/main.css`, `src/app.js`)
-- No build process needed
-- Automatic deployment on push to main
+## 📜 License
 
-**To enable GitHub Pages:**
-1. Go to repository **Settings** → **Pages**
-2. Set **Source** to `Deploy from a branch`
-3. Select **Branch**: `main`
-4. Select **Folder**: `/ (root)`
-5. Click **Save**
-
-Your app will be live at: `https://akshayaa-403.github.io/Habita/`
-
----
-
-## License
-
-Distributed under the MIT License. See `LICENSE` file for more information.
+Distributed under the **MIT License**. See the `LICENSE` file for full text.
