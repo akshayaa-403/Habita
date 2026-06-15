@@ -29,12 +29,24 @@ window.Habita = window.Habita || {};
     persist();
   };
 
-  app.toggleTask = function(quadrant, taskId) {
+  app.toggleTask = async function(quadrant, taskId) {
     const task = tasks['q' + quadrant].find(t => t.id === taskId);
     if (task) {
       task.completed = !task.completed;
-      persist();
+      try {
+        if (window.Haptics) {
+          await window.Haptics.impact({ style: window.ImpactStyle.Light });
+          console.log("Haptic feedback sent");
+        } else if (navigator.vibrate) {
+          navigator.vibrate(50);
+        } else {
+          console.warn("No haptics available");
+        }
+      } catch (err) {
+        console.error("Haptics error:", err);
+      }
     }
+    persist();
   };
 
   app.updateTaskText = function(quadrant, taskId, newText) {

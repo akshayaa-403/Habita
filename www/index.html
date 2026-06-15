@@ -2,11 +2,20 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Habita – Eisenhower Matrix</title>
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
+
+  <!-- Capacitor Haptics Module Loader (kept for future use) -->
+  <script type="module">
+    import { Haptics, ImpactStyle } from 'https://unpkg.com/@capacitor/haptics@5/dist/esm/index.js';
+    window.Haptics = Haptics;
+    window.ImpactStyle = ImpactStyle;
+    console.log("Capacitor Haptics loaded");
+  </script>
+
   <!-- Dark Mode Toggle -->
   <div class="dark-mode-toggle" id="darkModeToggle" title="Toggle dark/light mode">
     <svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>
@@ -15,23 +24,35 @@
   <!-- Matrix View -->
   <div class="matrix-view" id="matrixView">
     <div class="matrix-grid" id="matrixGrid">
+      <!-- Axis Labels -->
+      <div class="axis-horizontal-top">Important</div>
+      <div class="axis-horizontal-bottom">Not Important</div>
+
+      <!-- Quadrant 1: Focus (Urgent & Important) -->
       <div class="quadrant q1" data-quadrant="1">
-        <span class="quadrant-label">Urgent &amp; High</span>
+        <span class="quadrant-label">Focus</span>
         <div class="progress-container" id="progress1"></div>
       </div>
+
+      <!-- Quadrant 2: Backburner (Not Urgent & Important) -->
       <div class="quadrant q2" data-quadrant="2">
-        <span class="quadrant-label">Not Urgent &amp; High</span>
+        <span class="quadrant-label">Backburner</span>
         <div class="progress-container" id="progress2"></div>
       </div>
+
+      <!-- Quadrant 3: Fit In (Urgent & Not Important) -->
       <div class="quadrant q3" data-quadrant="3">
-        <span class="quadrant-label">Urgent &amp; Low</span>
+        <span class="quadrant-label">Fit In</span>
         <div class="progress-container" id="progress3"></div>
       </div>
+
+      <!-- Quadrant 4: Goals (Not Urgent & Not Important) -->
       <div class="quadrant q4" data-quadrant="4">
-        <span class="quadrant-label">Not Urgent &amp; Low</span>
+        <span class="quadrant-label">Goals</span>
         <div class="progress-container" id="progress4"></div>
       </div>
-      <!-- Center Plus Button -->
+
+      <!-- Center Draggable Plus Button -->
       <div class="plus-button" id="plusButton">
         <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
       </div>

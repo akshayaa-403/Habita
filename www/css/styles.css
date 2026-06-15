@@ -9,17 +9,18 @@
   --btn-bg: #fff;
   --btn-hover: #f0f0f0;
   --overlay: rgba(0,0,0,0.5);
+  --fab-shadow: 0 4px 12px rgba(0,0,0,0.3);
 
-  /* Quadrant pastel colors - brighter light mode (Task 5) */
-  --q1: #ffcccc;  /* brighter pastel red */
-  --q2: #ccffcc;  /* brighter pastel green */
-  --q3: #fff5b0;  /* brighter pastel yellow */
-  --q4: #cce5ff;  /* brighter pastel blue */
+  /* Ike App Colors */
+  --q1: #EE544F;  /* Focus (Urgent & Important) */
+  --q2: #01C0A6;  /* Backburner (Not Urgent & Important) */
+  --q3: #FBB028;  /* Fit In (Urgent & Not Important) */
+  --q4: #00B9D5;  /* Goals (Not Urgent & Not Important) */
 
-  --q1-text: #a33;
-  --q2-text: #285e28;
-  --q3-text: #8b7d1a;
-  --q4-text: #1d5280;
+  --q1-text: #ffffff;
+  --q2-text: #ffffff;
+  --q3-text: #ffffff;
+  --q4-text: #ffffff;
 
   /* Task list page light backgrounds (lighter versions) */
   --q1-light: #ffebeb;
@@ -40,12 +41,12 @@ body.dark-mode {
   --btn-bg: #3a3a3a;
   --btn-hover: #4a4a4a;
   --overlay: rgba(0,0,0,0.7);
+  --fab-shadow: 0 4px 12px rgba(0,0,0,0.5);
 
-  /* Softened dark mode quadrant colours (Task 8) */
-  --q1: #d4a0a0;
-  --q2: #7a9e7a;
-  --q3: #c4b76b;
-  --q4: #7a8eb5;
+  --q1: #EE544F;
+  --q2: #01C0A6;
+  --q3: #FBB028;
+  --q4: #00B9D5;
 
   --q1-light: #5c3232;
   --q2-light: #2d422d;
@@ -94,27 +95,96 @@ body {
   display: flex;
   flex-direction: column;
   position: relative;
+  padding: 16px;
 }
+
 .matrix-grid {
   flex: 1;
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr 1fr;
+  gap: 16px;  /* Creates card separation */
   position: relative;
 }
 
+/* Spline axis labels - Appear in the center gaps */
+/* Urgent & Not Urgent labels positioned on the left and right */
+.matrix-grid::before {
+  content: "Urgent";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: bold;
+  color: var(--text-secondary);
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 14px;
+  opacity: 0.7;
+  letter-spacing: 2px;
+}
+
+.matrix-grid::after {
+  content: "Not Urgent";
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: bold;
+  color: var(--text-secondary);
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 14px;
+  opacity: 0.7;
+  letter-spacing: 2px;
+}
+
+/* Important & Not Important labels positioned on the top and bottom */
+.matrix-grid .axis-horizontal-top {
+  position: absolute;
+  top: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-weight: bold;
+  color: var(--text-secondary);
+  font-size: 14px;
+  opacity: 0.7;
+  white-space: nowrap;
+}
+
+.matrix-grid .axis-horizontal-bottom {
+  position: absolute;
+  bottom: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-weight: bold;
+  color: var(--text-secondary);
+  font-size: 14px;
+  opacity: 0.7;
+  white-space: nowrap;
+}
+
+/* Card-like quadrants */
 .quadrant {
   position: relative;
   display: flex;
-  flex-direction: column;  /* Stack label above circle (Task 2) */
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: filter 0.15s, transform 0.1s;
+  border-radius: 32px;        /* Rounded corners */
+  box-shadow: var(--shadow);  /* Elevated shadow */
+  transition: transform 0.15s, box-shadow 0.2s, filter 0.1s;
   overflow: hidden;
+  padding: 16px;
 }
-.quadrant:hover { filter: brightness(0.97); }
-.quadrant:active { transform: scale(0.98); }
+.quadrant:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.15);
+}
+.quadrant:active {
+  transform: scale(0.98);
+}
 
 /* Quadrant backgrounds */
 .q1 { background: var(--q1); }
@@ -122,30 +192,31 @@ body {
 .q3 { background: var(--q3); }
 .q4 { background: var(--q4); }
 
-/* Labels – now above circle, centered, Helvetica, larger (Task 2) */
+/* Labels – above circle */
 .quadrant-label {
   font-family: 'Helvetica', 'Arial', sans-serif;
-  font-size: 1.1rem;
-  font-weight: 500;
+  font-size: 1.2rem;
+  font-weight: 600;
   color: var(--q1-text);
   text-align: center;
-  margin-bottom: 12px;   /* space between label and progress ring */
-  opacity: 0.9;
+  margin-bottom: 12px;
+  opacity: 0.95;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
 }
 .q2 .quadrant-label { color: var(--q2-text); }
 .q3 .quadrant-label { color: var(--q3-text); }
 .q4 .quadrant-label { color: var(--q4-text); }
 
-/* ========== Progress Ring (Task 1: bigger, 130px) ========== */
+/* ========== Progress Ring ========== */
 .progress-container {
   position: relative;
-  width: 130px;
-  height: 130px;
+  width: 120px;
+  height: 120px;
 }
 .progress-ring {
   transform: rotate(-90deg);
-  width: 130px;
-  height: 130px;
+  width: 120px;
+  height: 120px;
 }
 .progress-ring-bg {
   fill: none;
@@ -164,23 +235,25 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 2rem;       /* larger for bigger ring */
+  font-size: 1.9rem;
   font-weight: 700;
   font-family: 'Helvetica', 'Arial', sans-serif;
   color: white;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
 }
 .total-text {
   position: absolute;
-  bottom: 14px;
+  bottom: 12px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   opacity: 0.9;
   font-family: 'Helvetica', 'Arial', sans-serif;
   color: white;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
 }
 
-/* ========== Central Plus Button ========== */
+/* ========== Center Draggable Plus Button (Restored) ========== */
 .plus-button {
   position: absolute;
   left: 50%;
@@ -212,6 +285,12 @@ body {
   fill: var(--text);
 }
 
+/* Floating Action Button (FAB) - Keep but move to bottom right? No, keep the plus button. */
+/* We will keep .fab but hide it or remove references in JS. */
+.fab {
+  display: none;
+}
+
 /* ========== Task List Page ========== */
 .task-list-page {
   display: none;
@@ -220,7 +299,6 @@ body {
   background: var(--surface);
   padding: 20px;
   animation: fadeSlideIn 0.3s ease;
-  position: relative; /* for padding right fix */
 }
 .task-list-page.active {
   display: flex;
@@ -235,7 +313,7 @@ body {
   display: flex;
   align-items: center;
   margin-bottom: 16px;
-  padding-right: 60px;  /* Task 3: space for dark mode toggle */
+  padding-right: 60px;
 }
 .back-btn {
   background: none;
@@ -268,7 +346,6 @@ body {
   padding-right: 8px;
 }
 
-/* Task item */
 .task-item {
   display: flex;
   align-items: center;
@@ -284,7 +361,6 @@ body {
   outline: 2px dashed var(--text-secondary);
 }
 
-/* Drag handle (6 dots) – ensure visibility */
 .drag-handle {
   display: flex;
   flex-direction: column;
@@ -292,13 +368,9 @@ body {
   cursor: grab;
   padding: 4px;
   margin-right: 8px;
-  color: #999;
 }
 .drag-handle:active { cursor: grabbing; }
-.dot-row {
-  display: flex;
-  gap: 3px;
-}
+.dot-row { display: flex; gap: 3px; }
 .dot {
   width: 5px;
   height: 5px;
@@ -314,7 +386,6 @@ body {
   border-radius: 6px;
   margin-right: 12px;
   cursor: pointer;
-  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -381,30 +452,31 @@ body {
 }
 .add-task-btn:hover { background: var(--btn-hover); }
 
-/* ========== Splash Animation (Task 4) ========== */
+/* Splash overlay */
 .splash-overlay {
   position: fixed;
   top: 0; left: 0; width: 100%; height: 100%;
   z-index: 1000;
   pointer-events: none;
   display: none;
-  /* The background colour is set dynamically in JS */
   animation: splashFadeIn 0.8s ease-out forwards;
 }
 @keyframes splashFadeIn {
   0% { opacity: 0; }
   100% { opacity: 1; }
 }
-/* The circle element is removed; we use the overlay itself to hide other quadrants */
 
-/* ========== Scrollbar styling ========== */
+/* Scrollbar */
 .task-items::-webkit-scrollbar { width: 6px; }
 .task-items::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
-/* ========== Responsive ========== */
+/* Responsive */
 @media (max-width: 600px) {
+  .matrix-grid { gap: 12px; }
+  .quadrant { border-radius: 24px; padding: 12px; }
   .progress-container { width: 100px; height: 100px; }
   .progress-ring { width: 100px; height: 100px; }
   .remaining-number { font-size: 1.5rem; }
   .quadrant-label { font-size: 0.9rem; }
+  .plus-button { bottom: 20px; right: 20px; width: 52px; height: 52px; }
 }

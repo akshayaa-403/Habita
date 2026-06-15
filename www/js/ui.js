@@ -61,7 +61,7 @@ window.Habita = window.Habita || {};
       item.dataset.index = index;
       item.dataset.id = task.id;
 
-      // 6-dot drag handle (FIX TASK 7)
+      // 6-dot drag handle
       const handle = document.createElement('div');
       handle.className = 'drag-handle';
       handle.innerHTML = '<div class="dot-row"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div><div class="dot-row"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>';
@@ -93,10 +93,10 @@ window.Habita = window.Habita || {};
       });
       item.appendChild(textSpan);
 
-      // Delete button (🗑 icon) – FIX DELETE ICON
+      // Delete button
       const deleteBtn = document.createElement('button');
       deleteBtn.className = 'task-delete-btn';
-      deleteBtn.innerHTML = '\u{1F5D1}'; // 🗑 emoji
+      deleteBtn.innerHTML = '\u{1F5D1}';
       deleteBtn.title = 'Delete task';
       deleteBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -106,7 +106,7 @@ window.Habita = window.Habita || {};
       });
       item.appendChild(deleteBtn);
 
-      // Reorder drag events
+      // Drag & drop events
       item.addEventListener('dragstart', dragStart);
       item.addEventListener('dragover', dragOver);
       item.addEventListener('dragleave', dragLeave);
@@ -120,7 +120,7 @@ window.Habita = window.Habita || {};
     taskCountBadge.textContent = `${remaining} left of ${total}`;
   }
 
-  // Inline helper: make text editable
+  // Inline editing helpers
   function makeEditable(e) {
     e.stopPropagation();
     this.contentEditable = true;
@@ -138,13 +138,11 @@ window.Habita = window.Habita || {};
     const newText = span.textContent.trim();
     const quadrant = currentQuadrant;
     const taskId = parseInt(span.closest('.task-item').dataset.id);
-    // original task text might be needed, we'll use whatever was stored before
-    // but we can just call updateTaskText and it will overwrite
     app.updateTaskText(quadrant, taskId, newText);
     if (!newText) span.textContent = 'New task';
   }
 
-  // ----- Drag & drop reorder -----
+  // Drag & drop reorder
   function dragStart(e) {
     draggedItem = this;
     draggedIndex = parseInt(this.dataset.index);
@@ -188,13 +186,14 @@ window.Habita = window.Habita || {};
     currentQuadrant = quadrant;
     quickAddMode = quickAdd;
 
+    // Updated color mapping and labels for Ike quadrants
     const colorMap = {1: '--q1', 2: '--q2', 3: '--q3', 4: '--q4'};
     const lightColorMap = {1: '--q1-light', 2: '--q2-light', 3: '--q3-light', 4: '--q4-light'};
     const labelMap = {
-      1: 'Urgent & High Priority',
-      2: 'Not Urgent & High Priority',
-      3: 'Urgent & Low Priority',
-      4: 'Not Urgent & Low Priority'
+      1: 'Focus',        // Urgent & Important
+      2: 'Backburner',   // Not Urgent & Important
+      3: 'Fit In',       // Urgent & Not Important
+      4: 'Goals'         // Not Urgent & Not Important
     };
 
     playSplashAnimation(colorMap[quadrant], () => {
@@ -203,7 +202,6 @@ window.Habita = window.Habita || {};
       renderTaskList(quadrant);
       matrixView.style.display = 'none';
       taskListPage.classList.add('active');
-      resetPlusButton();
 
       if (quickAdd) {
         app.addTask(quadrant, '');
@@ -229,52 +227,18 @@ window.Habita = window.Habita || {};
     app.renderProgressRings();
   }
 
-  function resetPlusButton() {
-    plusButton.style.transform = 'translate(-50%, -50%)';
-    plusButton.classList.remove('dragging');
-  }
-
-  // ----- Event initialisation -----
-  function initQuadrantClicks() {
-    document.querySelectorAll('.quadrant').forEach(q => {
-      q.addEventListener('click', (e) => {
-        if (e.target.closest('.plus-button')) return;
-        const qNum = parseInt(q.dataset.quadrant);
-        app.openTaskList(qNum, false);
-      });
-    });
-  }
-
-  function initBackButton() {
-    backBtn.addEventListener('click', closeTaskList);
-  }
-
-  function initAddTaskButton() {
-    addTaskBtn.addEventListener('click', () => {
-      if (currentQuadrant) {
-        app.addTask(currentQuadrant, '');
-        renderTaskList(currentQuadrant);
-        app.renderProgressRings();
-        const items = taskItemsContainer.querySelectorAll('.task-item');
-        const lastItem = items[items.length - 1];
-        if (lastItem) {
-          const textSpan = lastItem.querySelector('.task-text');
-          if (textSpan) textSpan.dblclick();
-        }
-      }
-    });
-  }
-
+  // ----- Draggable Plus Button (restored) -----
   function initPlusButtonDrag() {
     let isDraggingPlus = false;
     let startX, startY;
+
+    if (!plusButton) return;
 
     plusButton.addEventListener('pointerdown', (e) => {
       if (e.button !== 0) return;
       e.preventDefault();
       isDraggingPlus = true;
       plusButton.setPointerCapture(e.pointerId);
-      const rect = plusButton.getBoundingClientRect();
       startX = e.clientX;
       startY = e.clientY;
       plusButton.classList.add('dragging');
@@ -309,7 +273,8 @@ window.Habita = window.Habita || {};
       if (quadrant) {
         app.openTaskList(quadrant, true);
       } else {
-        resetPlusButton();
+        // Reset to center if dropped outside
+        plusButton.style.transform = '';
       }
     });
 
@@ -317,6 +282,36 @@ window.Habita = window.Habita || {};
       if (isDraggingPlus || plusButton.classList.contains('dragging')) {
         e.stopPropagation();
         e.preventDefault();
+      }
+    });
+  }
+
+  // ----- Event initialisation -----
+  function initQuadrantClicks() {
+    document.querySelectorAll('.quadrant').forEach(q => {
+      q.addEventListener('click', (e) => {
+        const qNum = parseInt(q.dataset.quadrant);
+        app.openTaskList(qNum, false);
+      });
+    });
+  }
+
+  function initBackButton() {
+    backBtn.addEventListener('click', closeTaskList);
+  }
+
+  function initAddTaskButton() {
+    addTaskBtn.addEventListener('click', () => {
+      if (currentQuadrant) {
+        app.addTask(currentQuadrant, '');
+        renderTaskList(currentQuadrant);
+        app.renderProgressRings();
+        const items = taskItemsContainer.querySelectorAll('.task-item');
+        const lastItem = items[items.length - 1];
+        if (lastItem) {
+          const textSpan = lastItem.querySelector('.task-text');
+          if (textSpan) textSpan.dblclick();
+        }
       }
     });
   }
