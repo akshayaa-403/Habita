@@ -17,6 +17,7 @@ window.Habita = window.Habita || {};
       document.body.classList.remove('dark-mode');
       toggle.querySelector('svg').innerHTML = sunSVG;
     }
+    toggle.setAttribute('aria-pressed', String(enabled));
     localStorage.setItem(DARK_MODE_KEY, enabled);
   };
 
