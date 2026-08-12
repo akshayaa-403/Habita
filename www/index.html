@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="description" content="Habita — a visual Eisenhower Matrix task manager. Organise tasks into four urgency/importance quadrants.">
+  <meta name="description" content="Habita — a visual Eisenhower Matrix task manager that blocks time for your tasks in your phone's own calendar.">
   <meta name="theme-color" content="#f5f3f0">
   <meta name="color-scheme" content="light dark">
   <title>Habita – Eisenhower Matrix</title>
@@ -59,6 +59,47 @@
     </div>
   </div>
 
+  <!-- Day Timeline View -->
+  <div class="timeline-view" id="timelineView" hidden>
+    <div class="timeline-header">
+      <div class="day-nav">
+        <button type="button" class="nav-btn" id="prevDayBtn" aria-label="Previous day">‹</button>
+        <div class="day-heading">
+          <span class="day-label" id="dayLabel"></span>
+          <span class="day-date" id="dayDate"></span>
+        </div>
+        <button type="button" class="nav-btn" id="nextDayBtn" aria-label="Next day">›</button>
+        <button type="button" class="today-btn" id="todayBtn">Today</button>
+      </div>
+      <button type="button" class="calendar-status" id="calendarStatus"
+              title="Calendar connection — tap to connect or pause syncing"></button>
+    </div>
+
+    <!-- Unscheduled tasks: drag one onto the day, or tap to auto-place it -->
+    <div class="tray-wrapper">
+      <div class="tray-head">
+        <span class="tray-title">Waiting</span>
+        <span class="tray-count" id="trayCount"></span>
+      </div>
+      <div class="timeline-tray" id="timelineTray"></div>
+    </div>
+
+    <div class="timeline-scroller" id="timelineScroller">
+      <div class="timeline-grid" id="timelineGrid">
+        <div class="hour-lines" id="hourLines"></div>
+        <!-- Existing phone-calendar events, read-only, in their own lane -->
+        <div class="device-events-lane" id="deviceEventsLane"></div>
+        <!-- Habita task blocks: draggable and resizable -->
+        <div class="task-blocks-lane" id="taskBlocksLane"></div>
+        <div class="now-line" id="nowLine" hidden><span class="now-dot"></span></div>
+      </div>
+      <p class="timeline-empty-hint" id="timelineEmptyHint">
+        Drag a task from <strong>Waiting</strong> onto the hours above to block out time for it.
+        Drag a block to move it, or pull its bottom edge to change how long it takes.
+      </p>
+    </div>
+  </div>
+
   <!-- Task List Page -->
   <div class="task-list-page" id="taskListPage">
     <div class="task-list-header">
@@ -70,13 +111,30 @@
     <button class="add-task-btn" id="addTaskBtn">+ Add Task</button>
   </div>
 
+  <!-- Bottom navigation between the matrix and the day timeline -->
+  <nav class="bottom-nav" id="bottomNav" aria-label="Views">
+    <button type="button" class="nav-tab active" data-view="matrix" aria-current="page">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/></svg>
+      <span>Matrix</span>
+    </button>
+    <button type="button" class="nav-tab" data-view="timeline">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7zm12 8v10H5V10h14zM7 12h5v4H7v-4z"/></svg>
+      <span>Day</span>
+    </button>
+  </nav>
+
+  <!-- Floating time read-out shown while dragging a block -->
+  <div class="drag-tooltip" id="dragTooltip" hidden></div>
+
   <!-- Splash overlay container -->
   <div class="splash-overlay" id="splashOverlay"></div>
 
   <script src="js/storage.js"></script>
+  <script src="js/calendar.js"></script>
   <script src="js/tasks.js"></script>
   <script src="js/progress.js"></script>
   <script src="js/theme.js"></script>
+  <script src="js/timeline.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/main.js"></script>
 </body>

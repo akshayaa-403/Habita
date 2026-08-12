@@ -1,7 +1,7 @@
 {
   "name": "habita",
   "version": "1.0.0",
-  "description": "A visual Eisenhower Matrix task manager. Organise tasks into four urgency/importance quadrants — offline-first, drag-and-drop, dark mode. Packaged for Android with Capacitor.",
+  "description": "A visual Eisenhower Matrix task manager that blocks out time for your tasks in the phone's own calendar. Offline-first, drag-and-drop, dark mode. Packaged for Android with Capacitor.",
   "license": "MIT",
   "private": true,
   "homepage": "https://github.com/akshayaa-403/Habita",
@@ -12,8 +12,10 @@
   "scripts": {
     "start": "npx serve www",
     "serve": "npx serve www",
+    "test": "node tests/timeline.test.mjs",
     "sync": "cap sync",
-    "open:android": "cap open android"
+    "open:android": "cap open android",
+    "android": "cap sync android && cap open android"
   },
   "dependencies": {
     "@capacitor/android": "^8.4.0",
@@ -22,5 +24,8 @@
     "@capacitor/filesystem": "^8.1.2",
     "@capacitor/haptics": "^8.0.2",
     "@capacitor/local-notifications": "^8.2.0"
+  },
+  "devDependencies": {
+    "jsdom": "^30.0.1"
   }
 }

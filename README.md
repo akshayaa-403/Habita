@@ -1,68 +1,115 @@
 # Habita
 
-![License](https://img.shields.io/badge/License-MIT-blue.svg) ![JavaScript](https://img.shields.io/badge/JavaScript-ES6-yellow.svg) ![HTML5](https://img.shields.io/badge/HTML5-E34F26.svg?logo=html5&logoColor=white) ![CSS3](https://img.shields.io/badge/CSS3-1572B6.svg?logo=css3&logoColor=white) ![LocalStorage](https://img.shields.io/badge/storage-localStorage-brightgreen.svg) ![Status](https://img.shields.io/badge/status-production-important.svg)
+![License](https://img.shields.io/badge/License-MIT-blue.svg) ![JavaScript](https://img.shields.io/badge/JavaScript-ES6-yellow.svg) ![HTML5](https://img.shields.io/badge/HTML5-E34F26.svg?logo=html5&logoColor=white) ![CSS3](https://img.shields.io/badge/CSS3-1572B6.svg?logo=css3&logoColor=white) ![Android](https://img.shields.io/badge/Android-Capacitor-3DDC84.svg?logo=android&logoColor=white) ![LocalStorage](https://img.shields.io/badge/storage-localStorage-brightgreen.svg)
 
-Habita is a visual task manager based on the Eisenhower Matrix that organizes tasks into four urgency-importance quadrants. It eliminates scattered to-do lists, helping you focus on what truly matters and ship high-impact work faster — all with drag-and-drop, dark mode, and persistent local storage.
+An Android task manager built on the Eisenhower Matrix. Sort tasks by urgency and
+importance, then **drag them onto a day timeline that writes real events into the
+phone's own calendar** — so the time you set aside shows up wherever you already
+look, not only inside this app.
+
+Two views, one model:
+
+- **Matrix** — four colour-coded quadrants (Focus, Backburner, Fit In, Goals) with progress rings.
+- **Day** — an hour grid where each task becomes a block in its quadrant's colour. Drag to place it, drag again to move it, pull the bottom edge to change how long it takes.
 
 ## Features
 
-| Feature                    | Description                                                                                           |
-|----------------------------|-------------------------------------------------------------------------------------------------------|
-| **Quadrant Matrix View**   | Four colour‑coded boards: `Urgent & High`, `Not Urgent & High`, `Urgent & Low`, `Not Urgent & Low`. Click any quadrant to drill down. |
-| **Live Progress Rings**    | Each quadrant shows an SVG progress ring with the number of remaining tasks. Updates instantly as you check or add tasks. |
-| **Drag & Drop Reordering** | Inside any task list, reorder tasks by dragging the six‑dot handle. No accidental moves – only intentional reordering. |
-| **Inline Task Editing**    | Double‑click any task name to edit it inline. Press Enter or blur to save.                            |
-| **Dark Mode**              | Toggle between light and dark themes. Respects system preference on first visit and stores your choice in `localStorage`. |
-| **Splash Animation**       | Entering a quadrant triggers a subtle full‑screen splash animation for smooth visual feedback.       |
-| **Persistent Storage**     | All tasks and theme settings are saved automatically in the browser’s `localStorage`. Refresh or close – your data stays. |
-| **Haptic Feedback**        | Completing a task triggers a light vibration — the native Capacitor Haptics plugin on Android, with a Web Vibration API fallback in the browser. |
-| **Keyboard & A11y**        | Quadrants are keyboard-focusable, controls carry ARIA labels, focus rings are visible, and animations respect `prefers-reduced-motion`. |
+| Feature | Description |
+|---|---|
+| **Quadrant Matrix View** | Four colour-coded boards: `Urgent & Important`, `Not Urgent & Important`, `Urgent & Not Important`, `Not Urgent & Not Important`. Tap any quadrant to drill down. |
+| **Day Timeline** | A 24-hour grid with 15-minute snapping. Unscheduled tasks wait in a tray; drag one onto an hour to block out time for it. |
+| **Calendar Sync** | Every scheduled task becomes a real event in a calendar you choose, tinted to match its quadrant. Move or resize the block and the event follows; unschedule it and the event goes away. |
+| **Your Existing Events** | The day view reads what is already in your calendar and draws it in its own lane, so you can see what a slot would collide with before you take it. |
+| **Tap to Auto-Place** | Tapping a task in the tray drops it into the earliest slot that clears both your other blocks and your existing calendar events. |
+| **Live Progress Rings** | Each quadrant shows an SVG ring with the number of remaining tasks, updating as you check things off. |
+| **Drag & Drop Reordering** | Inside a task list, reorder by dragging the six-dot handle. |
+| **Inline Task Editing** | Double-click a task name to edit it. Renaming a scheduled task renames its calendar event too. |
+| **Dark Mode** | Follows the system preference on first run and remembers your choice. |
+| **Persistent Storage** | Tasks, schedules and settings live in `localStorage`; nothing is sent anywhere. |
+| **Haptic Feedback** | Completing a task triggers a light vibration via Capacitor Haptics, with a Web Vibration fallback. |
+| **Keyboard & A11y** | Quadrants and blocks are focusable, controls carry ARIA labels, and a focused block can be nudged with `↑`/`↓`, resized with `+`/`-`, and unscheduled with `Delete`. |
 
 ---
 
-## Tech Stack
+## How the calendar integration works
 
-| Layer       | Technology                                                          |
-|-------------|---------------------------------------------------------------------|
-| Structure   | HTML5                                                               |
-| Styling     | CSS3 (Grid, Flexbox, CSS Variables, transitions)                    |
-| Behaviour   | Vanilla JavaScript (ES6)                                            |
-| Graphics    | SVG + canvas‑like ring drawing                                      |
-| Persistence | Web LocalStorage API                                                |
+There is no third-party calendar dependency. `android/app/src/main/java/com/habita/app/CalendarPlugin.java`
+is a local Capacitor plugin over Android's `CalendarContract`, exposing exactly
+what the timeline needs:
+
+| Method | Purpose |
+|---|---|
+| `ensurePermission` / `isAvailable` | Request and check `READ_CALENDAR` / `WRITE_CALENDAR` |
+| `listCalendars` / `getDefaultCalendar` | Discover writable calendars; prefer the primary one |
+| `listEvents` | Occurrences overlapping a range, read from the **Instances** table so recurring events expand properly |
+| `createEvent` / `updateEvent` / `deleteEvent` | Keep one event per scheduled task |
+
+Details that matter in practice:
+
+- **Colours** go through the account's own palette (`EVENT_COLOR_KEY`, matched to
+  the nearest entry) because several providers ignore a raw `EVENT_COLOR`; writing
+  the literal value is the fallback.
+- **Events Habita created carry a marker** in their description, so the timeline
+  can tell its own blocks apart from the rest of your calendar and never draws
+  them twice.
+- **Updates are partial.** Moving a block writes only the times, so a description
+  you edited in your calendar app survives.
+- **A deleted event is not an error.** If `updateEvent` reports that the event has
+  gone — because you deleted it elsewhere — the block is recreated rather than
+  silently lost.
+- **Permission is requested after first paint**, never as the app's opening move,
+  and everything still works if you decline: the timeline just stays local. Blocks
+  made before you granted access are pushed to the calendar once you do.
 
 ---
 
 ## Getting Started
 
-### Clone & Run
-
 ```bash
 git clone https://github.com/akshayaa-403/Habita.git
 cd Habita
+npm install
 ```
 
-The web app lives in the `www/` folder and needs no build step. Serve that folder with any static server:
+### Run in a browser
+
+The web app is in `www/` and needs no build step:
 
 ```bash
-# npm (uses the bundled script)
-npm start                     # → npx serve www
-
-# Python 3
-python -m http.server 8000 -d www
-
-# Node.js (npx)
-npx serve www
+npm start                      # → npx serve www
+python -m http.server 8000 -d www    # or anything else static
 ```
 
-Then open the printed URL (e.g. `http://localhost:3000`) in your browser.
+The matrix and the timeline both work in a browser; only the device-calendar sync
+is unavailable there, and the day view says so instead of failing.
 
-### Build the Android app (Capacitor)
+### Build and run on Android
 
 ```bash
-npm install          # install Capacitor + plugins
-npm run sync         # copy www/ into the native project (cap sync)
-npm run open:android # open the project in Android Studio (cap open android)
+npm run android      # cap sync android && cap open android
 ```
+
+Then Run ▶ from Android Studio. Or straight from the command line:
+
+```bash
+npm run sync
+cd android && ./gradlew assembleDebug
+adb install app/build/outputs/apk/debug/app-debug.apk
+```
+
+Requires the Android SDK (compileSdk 36, minSdk 24) and a JDK 21 — the one bundled
+with Android Studio works.
+
+### Tests
+
+```bash
+npm test
+```
+
+Loads `www/index.html` in jsdom and drives the real UI — dragging a chip out of
+the tray onto an hour, moving the block, resizing it, ticking it off, unscheduling
+it — then asserts on the persisted model. Covers the pixel-to-time maths, the
+overlap layout, and the migration of tasks saved by earlier versions.
 
 ---
 
@@ -70,21 +117,26 @@ npm run open:android # open the project in Android Studio (cap open android)
 
 ```
 Habita/
-├── www/                       # Web app (served as-is / copied into the native shell)
-│   ├── index.html             # Main entry point
-│   ├── css/
-│   │   └── styles.css         # Light/dark themes, quadrant grid, responsive layout
+├── www/                          # Web app (served as-is / copied into the native shell)
+│   ├── index.html                # Matrix, timeline, task list, bottom nav
+│   ├── css/styles.css            # Themes, quadrant grid, timeline, responsive layout
 │   └── js/
-│       ├── main.js            # Bootstraps theme, UI, and progress rings on load
-│       ├── theme.js           # Dark mode logic, localStorage sync, system preference
-│       ├── storage.js         # load/save + id generation, shape validation & migration
-│       ├── tasks.js           # CRUD, completion toggling, reordering, haptics, counts
-│       ├── ui.js              # Task list rendering, drag-and-drop, inline editing, navigation
-│       └── progress.js        # SVG progress ring drawing and animation
-├── android/                   # Capacitor Android project
-├── capacitor.config.json      # Capacitor configuration
-├── package.json               # Metadata, scripts, and Capacitor dependencies
-├── LICENSE                    # MIT License
+│       ├── main.js               # Bootstraps theme, UI, rings and the timeline
+│       ├── theme.js              # Dark mode, localStorage, system preference
+│       ├── storage.js            # Load/save, id generation, shape migration
+│       ├── tasks.js              # CRUD, completion, reordering, scheduling, haptics
+│       ├── calendar.js           # Bridge to the native plugin, with a browser fallback
+│       ├── timeline.js           # Day grid, drag/move/resize, auto-placement
+│       ├── ui.js                 # Task lists, inline editing, navigation
+│       └── progress.js           # SVG progress rings
+├── android/
+│   └── app/src/main/java/com/habita/app/
+│       ├── MainActivity.java     # Registers the local plugin before the bridge starts
+│       └── CalendarPlugin.java   # CalendarContract read/write
+├── tests/timeline.test.mjs       # Headless jsdom test of the timeline
+├── capacitor.config.json
+├── package.json
+├── LICENSE
 └── .gitignore
 ```
 
@@ -92,24 +144,23 @@ Habita/
 
 ## How to Use
 
-1. **Start at the matrix** – You see four quadrants with progress rings.  
-2. **Open a quadrant** – Click (or focus with `Tab` and press `Enter`/`Space`) any quadrant to drill into its task list.  
-3. **Add a task** – Inside a quadrant, click **"+ Add Task"** — a new row opens ready to type. Or, from the matrix, **drag** the central **+** button onto a quadrant to jump straight into a new task there.  
-4. **Complete a task** – Tick the checkbox inside any task row.  
-5. **Edit a task** – Double‑click the task text, type a new name, and press `Enter` to save.  
-6. **Delete a task** – Click the trash bin icon.  
-7. **Reorder tasks** – Drag the **⋮⋮** handle vertically.  
-8. **Toggle dark mode** – Click the sun/moon icon in the top‑right corner.  
-9. **Track progress** – The outer ring fills in proportion to completed tasks; the inner count shows how many are left.
+1. **Sort first.** On the matrix, tap a quadrant to open its list, or drag the centre **+** onto a quadrant to add a task straight there.
+2. **Then schedule.** Switch to **Day**. Open tasks wait in the *Waiting* tray at the top.
+3. **Place a block.** Drag a chip from the tray onto an hour — it snaps to 15 minutes and a live read-out shows the exact slot. Tapping the chip instead drops it in the next free slot.
+4. **Adjust it.** Drag the block to move it; pull its bottom edge to change the duration. Both write straight through to your calendar.
+5. **Check the collisions.** Your existing calendar events sit in the left lane, so you can see what a slot runs into.
+6. **Finish or free it.** ✓ ticks the task off; ↩ sends it back to the tray and removes the calendar event.
+7. **Change day.** Use ‹ / › or **Today**. Blocks can sit on any day, not just today.
+8. **Connect or pause sync.** The line under the date shows the calendar status — tap it to grant access, or to pause syncing and keep the schedule local.
 
 ---
 
-## Design Highlights
+## Design Notes
 
-- **Smooth transitions** – Theme switch and splash animation feel fluid.  
-- **Responsive grid** – Quadrants wrap on narrow screens.  
-- **Accessible contrast** – Both light and dark modes meet readability standards.  
-- **No external fonts** – Uses system‑default sans‑serif for fast loading.  
+- **Sorting and scheduling are separate acts.** The matrix answers *does this matter*; the timeline answers *when*. Nothing is auto-scheduled — deciding what gets real time is the point of the exercise.
+- **The phone's calendar is the source of truth for time.** Habita writes to it rather than keeping a private schedule, so a blocked-out hour is visible to everything else that reads your calendar.
+- **Overlapping blocks split the width** instead of hiding one another, so a double-booked hour looks double-booked.
+- **Nothing leaves the device.** No account, no network calls, no analytics.
 
 ## 📜 License
 

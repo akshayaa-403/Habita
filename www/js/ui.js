@@ -15,16 +15,18 @@ window.Habita = window.Habita || {};
 
   // Internal state
   let currentQuadrant = null;
+  let currentView = 'matrix';
   let draggedItem = null;
   let draggedIndex = null;
 
   // DOM references (set during init)
-  let matrixView, taskListPage, plusButton, matrixGrid,
+  let matrixView, timelineView, taskListPage, plusButton, matrixGrid,
       backBtn, addTaskBtn, taskItemsContainer,
-      taskListTitle, taskCountBadge, splashOverlay;
+      taskListTitle, taskCountBadge, splashOverlay, bottomNav;
 
   app.initUI = function () {
     matrixView = document.getElementById('matrixView');
+    timelineView = document.getElementById('timelineView');
     taskListPage = document.getElementById('taskListPage');
     plusButton = document.getElementById('plusButton');
     matrixGrid = document.getElementById('matrixGrid');
@@ -34,12 +36,54 @@ window.Habita = window.Habita || {};
     taskListTitle = document.getElementById('taskListTitle');
     taskCountBadge = document.getElementById('taskCountBadge');
     splashOverlay = document.getElementById('splashOverlay');
+    bottomNav = document.getElementById('bottomNav');
 
     initQuadrantClicks();
     initPlusButtonDrag();
     initBackButton();
     initAddTaskButton();
+    initBottomNav();
   };
+
+  // ----- Top-level views -----
+  /**
+   * Switch between the matrix and the day timeline.
+   *
+   * The task list is a page on top of whichever view is active, so switching
+   * always closes it first — otherwise the back button would return to a view
+   * the user has since left.
+   */
+  app.showView = function (view) {
+    currentView = view === 'timeline' ? 'timeline' : 'matrix';
+    if (taskListPage.classList.contains('active')) {
+      taskListPage.classList.remove('active');
+      currentQuadrant = null;
+    }
+
+    matrixView.hidden = currentView !== 'matrix';
+    timelineView.hidden = currentView !== 'timeline';
+    matrixView.style.display = '';
+
+    bottomNav.querySelectorAll('.nav-tab').forEach((tab) => {
+      const active = tab.dataset.view === currentView;
+      tab.classList.toggle('active', active);
+      if (active) tab.setAttribute('aria-current', 'page');
+      else tab.removeAttribute('aria-current');
+    });
+
+    if (currentView === 'timeline') {
+      app.timelineDidShow();
+    } else {
+      app.renderProgressRings();
+    }
+  };
+
+  function initBottomNav() {
+    bottomNav.addEventListener('click', (event) => {
+      const tab = event.target.closest('.nav-tab');
+      if (tab) app.showView(tab.dataset.view);
+    });
+  }
 
   // ----- Splash animation -----
   function playSplashAnimation(quadrantColorVar, callback) {
@@ -100,6 +144,17 @@ window.Habita = window.Habita || {};
     taskCountBadge.textContent = `${remaining} left of ${total}`;
   }
 
+  /** "Tue 14:30 · 45m", or null when the task has no block yet. */
+  function describeSchedule(task) {
+    if (!task.start) return null;
+    const start = new Date(task.start);
+    const today = new Date();
+    const sameDay = start.toDateString() === today.toDateString();
+    const day = sameDay ? '' : `${start.toLocaleDateString([], { weekday: 'short' })} `;
+    const time = start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    return `${day}${time} · ${task.duration}m`;
+  }
+
   function createTaskItem(quadrant, task, index) {
     const item = document.createElement('div');
     item.className = 'task-item';
@@ -129,7 +184,10 @@ window.Habita = window.Habita || {};
     });
     item.appendChild(checkbox);
 
-    // Task text (double-click to edit, Enter to save)
+    // Text + schedule line
+    const main = document.createElement('div');
+    main.className = 'task-main';
+
     const textSpan = document.createElement('span');
     textSpan.className = 'task-text' + (task.completed ? ' completed' : '');
     textSpan.textContent = task.text || 'New task';
@@ -142,7 +200,43 @@ window.Habita = window.Habita || {};
         textSpan.blur();
       }
     });
-    item.appendChild(textSpan);
+    main.appendChild(textSpan);
+
+    const schedule = describeSchedule(task);
+    if (schedule) {
+      // Tapping the time chip opens the day it sits on.
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'schedule-chip';
+      chip.textContent = schedule;
+      chip.title = 'Show this block on the day view';
+      chip.addEventListener('click', (e) => {
+        e.stopPropagation();
+        app.showView('timeline');
+      });
+      main.appendChild(chip);
+    }
+    item.appendChild(main);
+
+    // Schedule / unschedule
+    const scheduleBtn = document.createElement('button');
+    scheduleBtn.type = 'button';
+    scheduleBtn.className = 'task-schedule-btn' + (task.start ? ' scheduled' : '');
+    scheduleBtn.innerHTML = task.start ? '↩' : '🕘';
+    scheduleBtn.title = task.start ? 'Remove the time block' : 'Block out time for this';
+    scheduleBtn.setAttribute('aria-label', scheduleBtn.title);
+    scheduleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (task.start) {
+        app.unscheduleTask(quadrant, task.id);
+        renderTaskList(quadrant);
+      } else {
+        // Hand off to the timeline, which knows what the day already contains.
+        app.showView('timeline');
+        app.scheduleTaskFromList(quadrant, task.id);
+      }
+    });
+    item.appendChild(scheduleBtn);
 
     // Delete button
     const deleteBtn = document.createElement('button');

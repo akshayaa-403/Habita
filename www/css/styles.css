@@ -56,6 +56,10 @@ body.dark-mode {
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* The [hidden] attribute is how views are toggled in JS, and any class rule
+   that sets `display` would otherwise win over the UA default. */
+[hidden] { display: none !important; }
+
 body {
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   background: var(--bg);
@@ -289,7 +293,9 @@ body {
 .task-list-page {
   display: none;
   flex-direction: column;
-  height: 100vh;
+  /* flex, not 100vh: the page shares the viewport with the bottom nav. */
+  flex: 1;
+  min-height: 0;
   background: var(--surface);
   padding: 20px;
   animation: fadeSlideIn 0.3s ease;
@@ -505,4 +511,424 @@ body {
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
+}
+/* ========== Task row: schedule affordances ========== */
+.task-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.task-main .task-text { flex: none; }
+
+/* Shows when a task has a block on the day view. */
+.schedule-chip {
+  align-self: flex-start;
+  background: var(--btn-bg);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+.schedule-chip:hover { background: var(--btn-hover); }
+
+.task-schedule-btn {
+  background: none;
+  border: none;
+  font-size: 1.05rem;
+  line-height: 1;
+  padding: 6px;
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.task-schedule-btn:hover { opacity: 1; transform: scale(1.1); }
+.task-schedule-btn.scheduled { opacity: 0.9; }
+
+/* ========== Bottom navigation ========== */
+.bottom-nav {
+  display: flex;
+  flex: none;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  /* Clear the Android gesture bar / iOS home indicator. */
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+.nav-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 4px 6px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.nav-tab svg { width: 22px; height: 22px; fill: currentColor; }
+.nav-tab.active { color: var(--text); font-weight: 600; }
+
+/* ========== Day timeline ========== */
+.timeline-view {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 12px 0;
+}
+.timeline-view[hidden] { display: none; }
+
+.timeline-header {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  /* Leave room for the fixed dark-mode toggle in the top-right corner. */
+  padding-right: 56px;
+}
+.day-nav { display: flex; align-items: center; gap: 6px; }
+.nav-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--btn-bg);
+  color: var(--text);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.nav-btn:hover { background: var(--btn-hover); }
+.day-heading { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.day-label { font-size: 1.15rem; font-weight: 600; }
+.day-date { font-size: 0.72rem; color: var(--text-secondary); }
+.today-btn {
+  border: 1px solid var(--border);
+  background: var(--btn-bg);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 0.78rem;
+  font-family: inherit;
+  cursor: pointer;
+}
+.today-btn:hover { background: var(--btn-hover); }
+
+.calendar-status {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.72rem;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text-secondary);
+}
+.calendar-status.ok { color: var(--q2); }
+.calendar-status.warn { color: var(--q1); }
+.calendar-status.muted { color: var(--text-secondary); }
+
+/* ----- Unscheduled tray ----- */
+.tray-wrapper { flex: none; margin: 8px 0 6px; }
+.tray-head { display: flex; align-items: baseline; gap: 8px; }
+.tray-title {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+}
+.tray-count { font-size: 0.68rem; color: var(--text-secondary); }
+
+.timeline-tray {
+  display: flex;
+  gap: 7px;
+  overflow-x: auto;
+  padding: 6px 0 2px;
+  /* Vertical drags out of the tray must reach the grid, not scroll the strip. */
+  touch-action: pan-x;
+}
+.timeline-tray::-webkit-scrollbar { height: 4px; }
+.timeline-tray::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.tray-chip {
+  flex: 0 0 auto;
+  max-width: 170px;
+  border: none;
+  border-radius: 999px;
+  padding: 7px 13px;
+  font-size: 0.8rem;
+  font-family: inherit;
+  color: #fff;
+  cursor: grab;
+  touch-action: none;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+}
+.tray-chip:active { cursor: grabbing; }
+.tray-chip .chip-text {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tray-chip.q1 { background: var(--q1); }
+.tray-chip.q2 { background: var(--q2); }
+.tray-chip.q3 { background: var(--q3); }
+.tray-chip.q4 { background: var(--q4); }
+.tray-empty { font-size: 0.78rem; color: var(--text-secondary); padding: 4px 0; }
+
+/* ----- Scrolling hour grid ----- */
+.timeline-scroller {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.timeline-scroller::-webkit-scrollbar { width: 6px; }
+.timeline-scroller::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.timeline-grid { position: relative; }
+
+.hour-lines { position: absolute; inset: 0; }
+.hour-row {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px solid var(--border);
+}
+/* Half-hour tick, so 15-minute snapping has something to read against. */
+.hour-row::after {
+  content: "";
+  position: absolute;
+  left: 52px;
+  right: 0;
+  top: 50%;
+  border-top: 1px dashed var(--border);
+  opacity: 0.5;
+}
+.hour-label {
+  position: absolute;
+  top: -0.55em;
+  left: 0;
+  width: 46px;
+  text-align: right;
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+  background: var(--bg);
+  padding-right: 2px;
+}
+
+/* Two lanes: the phone's own events on the left, Habita's blocks on the right. */
+.device-events-lane {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 56px;
+  width: 32%;
+}
+.task-blocks-lane {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(56px + 33%);
+  right: 2px;
+}
+
+.device-event {
+  position: absolute;
+  left: 0;
+  right: 4px;
+  overflow: hidden;
+  padding: 3px 5px;
+  border-left: 3px solid var(--text-secondary);
+  border-radius: 4px;
+  background: var(--btn-hover);
+  opacity: 0.85;
+  font-size: 0.66rem;
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+.device-event-title {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.device-event-time { display: block; opacity: 0.75; font-variant-numeric: tabular-nums; }
+
+.task-block {
+  position: absolute;
+  padding: 4px 6px;
+  border-radius: 7px;
+  color: #fff;
+  overflow: hidden;
+  cursor: grab;
+  /* The block owns the gesture: dragging it must not scroll the day. */
+  touch-action: none;
+  box-shadow: 0 1px 5px rgba(0,0,0,0.22);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 4px;
+  font-size: 0.74rem;
+  border: 2px solid transparent;
+}
+.task-block.q1 { background: var(--q1); }
+.task-block.q2 { background: var(--q2); }
+.task-block.q3 { background: var(--q3); }
+.task-block.q4 { background: var(--q4); }
+.task-block.completed { opacity: 0.55; }
+.task-block.completed .task-block-title { text-decoration: line-through; }
+.task-block.selected { border-color: var(--text); }
+.task-block.dragging {
+  cursor: grabbing;
+  opacity: 0.9;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+  z-index: 5;
+}
+
+.task-block-body { min-width: 0; flex: 1; }
+.task-block-title {
+  display: block;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.task-block-time {
+  display: block;
+  font-size: 0.66rem;
+  opacity: 0.9;
+  font-variant-numeric: tabular-nums;
+}
+
+.task-block-actions { display: flex; gap: 2px; flex: none; }
+.block-btn {
+  background: rgba(0,0,0,0.18);
+  border: none;
+  color: #fff;
+  border-radius: 5px;
+  width: 20px;
+  height: 20px;
+  font-size: 0.72rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+.block-btn:hover { background: rgba(0,0,0,0.32); }
+
+.resize-handle {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 12px;
+  cursor: ns-resize;
+  touch-action: none;
+}
+.resize-handle::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 3px;
+  width: 26px;
+  height: 3px;
+  margin-left: -13px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.55);
+}
+
+.now-line {
+  position: absolute;
+  left: 46px;
+  right: 0;
+  height: 0;
+  border-top: 2px solid var(--q1);
+  pointer-events: none;
+  z-index: 4;
+}
+.now-dot {
+  position: absolute;
+  left: -4px;
+  top: -4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--q1);
+}
+
+.timeline-empty-hint {
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+  padding: 10px 4px 16px;
+  line-height: 1.5;
+}
+
+/* ----- Drag feedback ----- */
+.drag-ghost {
+  position: fixed;
+  z-index: 1200;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  padding: 6px 12px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.78rem;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.75;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+}
+.drag-ghost.over-grid { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+.drag-ghost.q1 { background: var(--q1); }
+.drag-ghost.q2 { background: var(--q2); }
+.drag-ghost.q3 { background: var(--q3); }
+.drag-ghost.q4 { background: var(--q4); }
+
+.drag-tooltip {
+  position: fixed;
+  z-index: 1300;
+  transform: translate(-50%, -160%);
+  pointer-events: none;
+  background: var(--text);
+  color: var(--bg);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.nav-tab:focus-visible,
+.nav-btn:focus-visible,
+.today-btn:focus-visible,
+.calendar-status:focus-visible,
+.tray-chip:focus-visible,
+.task-block:focus-visible,
+.block-btn:focus-visible,
+.schedule-chip:focus-visible,
+.task-schedule-btn:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+@media (max-width: 600px) {
+  .timeline-view { padding: 10px 8px 0; }
+  .device-events-lane { width: 26%; }
+  .task-blocks-lane { left: calc(56px + 27%); }
+  .tray-chip { max-width: 140px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drag-ghost.over-grid { transform: translate(-50%, -50%); }
 }
