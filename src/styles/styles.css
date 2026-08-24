@@ -1,3 +1,10 @@
+@font-face {
+  font-family: 'Baron Neue';
+  src: url('../assets/fonts/BaronNeue.otf') format('opentype');
+  font-weight: normal;
+  font-display: swap;
+}
+
 /* ========== CSS Variables & Base ========== */
 :root {
   --bg: #f5f3f0;
@@ -11,11 +18,23 @@
   --overlay: rgba(0,0,0,0.5);
   --focus: #1a73e8;  /* keyboard focus ring */
 
-  /* Ike App Colors */
-  --q1: #EE544F;  /* Focus (Urgent & Important) */
-  --q2: #01C0A6;  /* Backburner (Not Urgent & Important) */
-  --q3: #FBB028;  /* Fit In (Urgent & Not Important) */
-  --q4: #00B9D5;  /* Goals (Not Urgent & Not Important) */
+  /* Ike App Colors — matrix layout: [red][blue] / [yellow][green] */
+  --q1: #EE544F;  /* Focus (Urgent & Important)        — top-left,  red    */
+  --q2: #00B9D5;  /* Goals (Not Urgent & Important)     — top-right, blue   */
+  --q3: #FBB028;  /* Fit In (Urgent & Not Important)    — bottom-left, yellow */
+  --q4: #01C0A6;  /* Backburner (Not Urgent & Not Imp.) — bottom-right, green */
+
+  /* Darker shade of each quadrant colour — used for the progress-ring track. */
+  --q1-dark: #CC4643;
+  --q2-dark: #0090A5;
+  --q3-dark: #CC8E21;
+  --q4-dark: #008C7B;
+
+  /* Pale pastel tints — shown on the non-target quadrants while dragging the +. */
+  --q1-pale: #f8c9c7;
+  --q2-pale: #bfe9f1;
+  --q3-pale: #fde7bd;
+  --q4-pale: #bfeae3;
 
   --q1-text: #ffffff;
   --q2-text: #ffffff;
@@ -23,10 +42,17 @@
   --q4-text: #ffffff;
 
   /* Task list page light backgrounds (lighter versions) */
-  --q1-light: #ffebeb;
-  --q2-light: #ebffeb;
-  --q3-light: #fffde0;
-  --q4-light: #e0f0ff;
+  --q1-light: #ffebeb;  /* red    */
+  --q2-light: #e0f0ff;  /* blue   */
+  --q3-light: #fffde0;  /* yellow */
+  --q4-light: #ebffeb;  /* green  */
+
+  --quadrant-label: #ffffff;
+
+  /* Progress-ring inner disc + centre text. */
+  --ring-disc: #ffffff;
+  --ring-number: #4a4a4a;
+  --ring-caption: #8a8a8a;
 
   transition: background 0.3s, color 0.3s;
 }
@@ -43,15 +69,26 @@ body.dark-mode {
   --overlay: rgba(0,0,0,0.7);
   --focus: #8ab4f8;
 
-  --q1: #EE544F;
-  --q2: #01C0A6;
-  --q3: #FBB028;
-  --q4: #00B9D5;
+  --q1: #EE544F;  /* red    */
+  --q2: #00B9D5;  /* blue   */
+  --q3: #FBB028;  /* yellow */
+  --q4: #01C0A6;  /* green  */
 
-  --q1-light: #5c3232;
-  --q2-light: #2d422d;
-  --q3-light: #4b4428;
-  --q4-light: #283b4f;
+  --q1-light: #5c3232;  /* red    */
+  --q2-light: #283b4f;  /* blue   */
+  --q3-light: #4b4428;  /* yellow */
+  --q4-light: #2d422d;  /* green  */
+
+  --quadrant-label: #1a1a1a;
+
+  --ring-number: #f0f0f0;
+  --ring-caption: #cfcfcf;
+
+  /* Per-quadrant darkened disc fills for dark mode. */
+  --q1-disc: #6e2320;  /* red    */
+  --q2-disc: #0a4a55;  /* blue   */
+  --q3-disc: #6b4a10;  /* yellow */
+  --q4-disc: #0a4d43;  /* green  */
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -72,14 +109,36 @@ body {
   transition: background 0.3s, color 0.3s;
 }
 
-/* ========== Dark Mode Toggle ========== */
-.dark-mode-toggle {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 1000;
+/* ========== Top ribbon ========== */
+.app-ribbon {
+  position: relative;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  padding-top: calc(8px + env(safe-area-inset-top, 0));
   background: var(--surface);
-  border: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  z-index: 100;
+}
+/* Centred title, so the corner buttons stay pinned to the edges. */
+.ribbon-title {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  margin-top: calc(env(safe-area-inset-top, 0) / 2);
+  font-family: 'Baron Neue', 'Segoe UI', system-ui, sans-serif;
+  font-size: 1.35rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text);
+  pointer-events: none;
+}
+.ribbon-btn {
+  background: none;
+  border: none;
   border-radius: 50%;
   width: 44px;
   height: 44px;
@@ -87,19 +146,23 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: var(--shadow);
+  color: var(--text);
   transition: background 0.2s;
 }
-.dark-mode-toggle:hover { background: var(--btn-hover); }
-.dark-mode-toggle svg { width: 24px; height: 24px; fill: var(--text); }
+.ribbon-btn:hover { background: var(--btn-hover); }
+.ribbon-btn svg { width: 24px; height: 24px; fill: var(--text); }
+/* Hamburger strokes use currentColor, not fill. */
+.menu-btn svg { fill: none; }
 
 /* ========== Main Matrix Container ========== */
+/* Ike look: four full-bleed squares that touch edge-to-edge — no padding, no
+   gaps, no rounded corners, no card shadows. */
 .matrix-view {
   flex: 1;
   display: flex;
   flex-direction: column;
   position: relative;
-  padding: 16px;
+  padding: 0;
 }
 
 .matrix-grid {
@@ -107,88 +170,91 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr 1fr;
-  gap: 16px;  /* Creates card separation */
+  gap: 0;
   position: relative;
+  /* Shrink-to-reveal-seams on press: the whole grid scales in and a white gap
+     opens between the four cells, exposing the axis labels sitting in the seams. */
+  background: var(--bg);
+  transition: gap 0.2s ease, transform 0.2s ease;
+}
+.matrix-grid.pressing {
+  gap: 34px;
+  transform: scale(0.94);
 }
 
-/* Spline axis labels - Appear in the center gaps */
-/* Urgent & Not Urgent labels positioned on the left and right */
-.matrix-grid::before {
-  content: "Urgent";
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  font-weight: bold;
-  color: var(--text-secondary);
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  font-size: 14px;
-  opacity: 0.7;
-  letter-spacing: 2px;
-}
-
-.matrix-grid::after {
-  content: "Not Urgent";
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  font-weight: bold;
-  color: var(--text-secondary);
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  font-size: 14px;
-  opacity: 0.7;
-  letter-spacing: 2px;
-}
-
-/* Important & Not Important labels positioned on the top and bottom */
-.matrix-grid .axis-horizontal-top {
-  position: absolute;
-  top: -28px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-weight: bold;
-  color: var(--text-secondary);
-  font-size: 14px;
-  opacity: 0.7;
-  white-space: nowrap;
-}
-
+/* Axis labels sit in the white seams that open when the grid is pressed, laid
+   out on axes with the centre plus as the origin:
+     +y (up) Urgent · -y (down) Not Urgent  — on the vertical seam
+     -x (left) Important · +x (right) Not Important — on the horizontal seam
+   Hidden at rest; revealed only in the .pressing state. */
+.matrix-grid::before,
+.matrix-grid::after,
+.matrix-grid .axis-horizontal-top,
 .matrix-grid .axis-horizontal-bottom {
   position: absolute;
-  bottom: -28px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-weight: bold;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 3px;
   color: var(--text-secondary);
-  font-size: 14px;
-  opacity: 0.7;
   white-space: nowrap;
+  pointer-events: none;
+  z-index: 5;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.matrix-grid.pressing::before,
+.matrix-grid.pressing::after,
+.matrix-grid.pressing .axis-horizontal-top,
+.matrix-grid.pressing .axis-horizontal-bottom {
+  opacity: 1;
 }
 
-/* Card-like quadrants */
+/* +y Urgent — vertical seam, upper arm; tilted 90° left (reads bottom-to-top). */
+.matrix-grid::before {
+  content: "Urgent";
+  left: 50%;
+  top: 25%;
+  transform: translate(-50%, -50%) rotate(-90deg);
+}
+
+/* -y Not Urgent — vertical seam, lower arm; tilted 90° left. */
+.matrix-grid::after {
+  content: "Not Urgent";
+  left: 50%;
+  top: 75%;
+  transform: translate(-50%, -50%) rotate(-90deg);
+}
+
+/* -x Important — horizontal seam, left arm. */
+.matrix-grid .axis-horizontal-top {
+  top: 50%;
+  left: 25%;
+  transform: translate(-50%, -50%);
+}
+
+/* +x Not Important — horizontal seam, right arm. */
+.matrix-grid .axis-horizontal-bottom {
+  top: 50%;
+  left: 75%;
+  transform: translate(-50%, -50%);
+}
+
+/* Full-bleed Ike-style quadrants: square, touching, no shadow. */
 .quadrant {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: center;   /* label + ring centred in the cell */
+  gap: 10px;
   cursor: pointer;
-  border-radius: 32px;        /* Rounded corners */
-  box-shadow: var(--shadow);  /* Elevated shadow */
-  transition: transform 0.15s, box-shadow 0.2s, filter 0.1s;
+  border-radius: 0;
+  box-shadow: none;
+  transition: filter 0.25s, background 0.25s;
   overflow: hidden;
-  padding: 16px;
+  padding: 12px;
 }
-.quadrant:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 28px rgba(0,0,0,0.15);
-}
-.quadrant:active {
-  transform: scale(0.98);
-}
+.quadrant:active { filter: brightness(0.96); }
 
 /* Quadrant backgrounds */
 .q1 { background: var(--q1); }
@@ -196,65 +262,84 @@ body {
 .q3 { background: var(--q3); }
 .q4 { background: var(--q4); }
 
-/* Labels – above circle */
+/* Labels — all-caps, white, light, letter-spaced, near the top. */
 .quadrant-label {
-  font-family: 'Helvetica', 'Arial', sans-serif;
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: var(--q1-text);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 400;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--quadrant-label);
   text-align: center;
-  margin-bottom: 12px;
   opacity: 0.95;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
 }
-.q2 .quadrant-label { color: var(--q2-text); }
-.q3 .quadrant-label { color: var(--q3-text); }
-.q4 .quadrant-label { color: var(--q4-text); }
 
-/* ========== Progress Ring ========== */
+/* ----- Drag-to-add feedback: fade the non-target quadrants to pale tints ----- */
+.matrix-grid.dragging .quadrant:not(.drag-target) { filter: none; }
+.matrix-grid.dragging .q1:not(.drag-target) { background: var(--q1-pale); }
+.matrix-grid.dragging .q2:not(.drag-target) { background: var(--q2-pale); }
+.matrix-grid.dragging .q3:not(.drag-target) { background: var(--q3-pale); }
+.matrix-grid.dragging .q4:not(.drag-target) { background: var(--q4-pale); }
+/* The target stays vivid and lifts slightly. */
+.matrix-grid.dragging .quadrant.drag-target { filter: brightness(1.05); }
+
+/* ========== Progress Ring (Ike style) ==========
+   A big white inner disc, a track in the quadrant's darker shade, the completed
+   arc drawn on top, and a large count + "to go" caption in the centre. */
 .progress-container {
   position: relative;
-  width: 120px;
-  height: 120px;
+  width: min(42vw, 150px);
+  aspect-ratio: 1;
+  flex: none;
 }
 .progress-ring {
   transform: rotate(-90deg);
-  width: 120px;
-  height: 120px;
+  width: 100%;
+  height: 100%;
 }
+/* Inner disc behind everything — white in light mode; in dark mode a darkened
+   version of each quadrant's own colour (set per-quadrant below). */
+.progress-ring-disc { fill: var(--ring-disc); }
+body.dark-mode .q1 .progress-ring-disc { fill: var(--q1-disc); }
+body.dark-mode .q2 .progress-ring-disc { fill: var(--q2-disc); }
+body.dark-mode .q3 .progress-ring-disc { fill: var(--q3-disc); }
+body.dark-mode .q4 .progress-ring-disc { fill: var(--q4-disc); }
+/* Track: the quadrant's darker shade (set per-quadrant below). */
 .progress-ring-bg {
   fill: none;
-  stroke: rgba(255,255,255,0.5);
-  stroke-width: 6;
+  stroke: rgba(0,0,0,0.10);
+  stroke-width: 9;
 }
+.q1 .progress-ring-bg { stroke: var(--q1-dark); }
+.q2 .progress-ring-bg { stroke: var(--q2-dark); }
+.q3 .progress-ring-bg { stroke: var(--q3-dark); }
+.q4 .progress-ring-bg { stroke: var(--q4-dark); }
+/* Completed arc, drawn in white over the darker track. */
 .progress-ring-fill {
   fill: none;
-  stroke: var(--text);
-  stroke-width: 6;
+  stroke: #fff;
+  stroke-width: 9;
   stroke-linecap: round;
   transition: stroke-dashoffset 0.6s ease;
 }
 .remaining-number {
   position: absolute;
-  top: 50%;
+  top: 44%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 1.9rem;
-  font-weight: 700;
-  font-family: 'Helvetica', 'Arial', sans-serif;
-  color: white;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  font-size: 2.2rem;
+  font-weight: 500;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  color: var(--ring-number);
 }
 .total-text {
   position: absolute;
-  bottom: 12px;
+  top: 62%;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 0.8rem;
-  opacity: 0.9;
-  font-family: 'Helvetica', 'Arial', sans-serif;
-  color: white;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  font-size: 0.75rem;
+  color: var(--ring-caption);
+  font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
 /* ========== Center Draggable Plus Button ========== */
@@ -263,19 +348,23 @@ body {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: 64px;
-  height: 64px;
-  background: var(--surface);
+  width: 56px;
+  height: 56px;
+  /* Ike-style: understated grey disc with a white plus. */
+  background: #cfcfcf;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  box-shadow: 0 3px 12px rgba(0,0,0,0.28);
   cursor: grab;
   z-index: 20;
   transition: box-shadow 0.2s, transform 0.1s;
   user-select: none;
-  border: 2px solid var(--border);
+  border: none;
+  /* The button owns the drag gesture: without this, a touch drag is treated as
+     a scroll/pan and the pointer events get cancelled mid-drag. */
+  touch-action: none;
 }
 .plus-button:active { cursor: grabbing; }
 .plus-button.dragging {
@@ -284,9 +373,9 @@ body {
   transition: none;
 }
 .plus-button svg {
-  width: 36px;
-  height: 36px;
-  fill: var(--text);
+  width: 32px;
+  height: 32px;
+  fill: #fff;
 }
 
 /* ========== Task List Page ========== */
@@ -313,7 +402,6 @@ body {
   display: flex;
   align-items: center;
   margin-bottom: 16px;
-  padding-right: 60px;
 }
 .back-btn {
   background: none;
@@ -492,15 +580,14 @@ body {
 
 /* Responsive */
 @media (max-width: 600px) {
-  .matrix-grid { gap: 12px; }
-  .quadrant { border-radius: 24px; padding: 12px; }
-  .progress-container { width: 100px; height: 100px; }
-  .progress-ring { width: 100px; height: 100px; }
-  .remaining-number { font-size: 1.5rem; }
-  .quadrant-label { font-size: 0.9rem; }
+  .quadrant { padding: 10px; }
+  .remaining-number { font-size: 1.9rem; }
+  .quadrant-label { font-size: 0.9rem; letter-spacing: 2px; }
   /* The plus button stays centred on the grid; only its size shrinks. */
   .plus-button { width: 56px; height: 56px; }
   .plus-button svg { width: 30px; height: 30px; }
+  /* Smaller seam gap so the shrunk grid still fills a narrow screen. */
+  .matrix-grid.pressing { gap: 24px; }
 }
 
 /* Respect users who prefer reduced motion */
@@ -591,8 +678,6 @@ body {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  /* Leave room for the fixed dark-mode toggle in the top-right corner. */
-  padding-right: 56px;
 }
 .day-nav { display: flex; align-items: center; gap: 6px; }
 .nav-btn {

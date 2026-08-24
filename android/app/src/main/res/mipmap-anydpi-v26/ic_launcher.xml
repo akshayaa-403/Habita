@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Full-bleed adaptive icon: the 2x2 colour grid fills the whole canvas so the
+     launcher mask (circle/squircle) is cut straight from the coloured squares,
+     with no white padding. The clock sits in the centre safe zone. -->
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
     <background android:drawable="@color/ic_launcher_background"/>
     <foreground android:drawable="@mipmap/ic_launcher_foreground"/>

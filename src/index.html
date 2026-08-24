@@ -7,15 +7,22 @@
   <meta name="theme-color" content="#f5f3f0">
   <meta name="color-scheme" content="light dark">
   <title>Habita – Eisenhower Matrix</title>
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="styles/styles.css">
 </head>
 <body>
 
-  <!-- Dark Mode Toggle -->
-  <button type="button" class="dark-mode-toggle" id="darkModeToggle"
-          title="Toggle dark/light mode" aria-label="Toggle dark mode" aria-pressed="false">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>
-  </button>
+  <!-- Top ribbon: hamburger menu (left) and light/dark toggle (right) -->
+  <header class="app-ribbon">
+    <button type="button" class="ribbon-btn menu-btn" id="menuBtn"
+            title="Menu" aria-label="Open menu">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+    </button>
+    <span class="ribbon-title">Habita</span>
+    <button type="button" class="ribbon-btn dark-mode-toggle" id="darkModeToggle"
+            title="Toggle dark/light mode" aria-label="Toggle dark mode" aria-pressed="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>
+    </button>
+  </header>
 
   <!-- Matrix View -->
   <div class="matrix-view" id="matrixView">
@@ -31,10 +38,10 @@
         <div class="progress-container" id="progress1"></div>
       </div>
 
-      <!-- Quadrant 2: Backburner (Not Urgent & Important) -->
+      <!-- Quadrant 2: Goals (Not Urgent & Important) — top-right, blue -->
       <div class="quadrant q2" data-quadrant="2" role="button" tabindex="0"
-           aria-label="Backburner — not urgent but important tasks">
-        <span class="quadrant-label">Backburner</span>
+           aria-label="Goals — important but not urgent tasks">
+        <span class="quadrant-label">Goals</span>
         <div class="progress-container" id="progress2"></div>
       </div>
 
@@ -45,10 +52,10 @@
         <div class="progress-container" id="progress3"></div>
       </div>
 
-      <!-- Quadrant 4: Goals (Not Urgent & Not Important) -->
+      <!-- Quadrant 4: Backburner (Not Urgent & Not Important) — bottom-right, green -->
       <div class="quadrant q4" data-quadrant="4" role="button" tabindex="0"
-           aria-label="Goals — not urgent and not important tasks">
-        <span class="quadrant-label">Goals</span>
+           aria-label="Backburner — not urgent and not important tasks">
+        <span class="quadrant-label">Backburner</span>
         <div class="progress-container" id="progress4"></div>
       </div>
 
@@ -129,13 +136,14 @@
   <!-- Splash overlay container -->
   <div class="splash-overlay" id="splashOverlay"></div>
 
-  <script src="js/storage.js"></script>
-  <script src="js/calendar.js"></script>
-  <script src="js/tasks.js"></script>
-  <script src="js/progress.js"></script>
-  <script src="js/theme.js"></script>
-  <script src="js/timeline.js"></script>
-  <script src="js/ui.js"></script>
-  <script src="js/main.js"></script>
+  <!-- Load order matters: core data/platform layer first, then features, then app bootstrap. -->
+  <script src="core/storage.js"></script>
+  <script src="core/calendar.js"></script>
+  <script src="features/tasks/tasks.js"></script>
+  <script src="features/matrix/progress.js"></script>
+  <script src="features/shared/theme.js"></script>
+  <script src="features/timeline/timeline.js"></script>
+  <script src="features/shared/ui.js"></script>
+  <script src="app/main.js"></script>
 </body>
 </html>

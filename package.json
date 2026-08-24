@@ -10,12 +10,16 @@
     "url": "https://github.com/akshayaa-403/Habita.git"
   },
   "scripts": {
-    "start": "npx serve www",
+    "build": "node scripts/build.js",
+    "start": "npm run build && npx serve www",
     "serve": "npx serve www",
+    "pretest": "npm run build",
     "test": "node tests/timeline.test.mjs",
-    "sync": "cap sync",
+    "sync": "npm run build && cap sync",
     "open:android": "cap open android",
-    "android": "cap sync android && cap open android"
+    "android": "npm run build && cap sync android && cap open android",
+    "icon:master": "node assets/make-icon.js",
+    "icons": "node assets/make-icon.js && node assets/build-android-icons.js"
   },
   "dependencies": {
     "@capacitor/android": "^8.4.0",
@@ -26,6 +30,7 @@
     "@capacitor/local-notifications": "^8.2.0"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
     "jsdom": "^30.0.1"
   }
 }

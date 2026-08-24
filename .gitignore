@@ -5,6 +5,9 @@ yarn-error.log
 dist/
 build/
 
+# Generated web build output (produced from src/ by scripts/build.js)
+www/
+
 # IDE
 .vscode/
 .idea/

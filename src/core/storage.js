@@ -1,4 +1,4 @@
-// js/storage.js
+// core/storage.js
 // Thin wrapper around localStorage for persisting tasks.
 window.Habita = window.Habita || {};
 

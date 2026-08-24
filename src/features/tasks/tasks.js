@@ -1,4 +1,4 @@
-// js/tasks.js
+// features/tasks/tasks.js
 // In-memory task model plus persistence. Every task id is a string.
 window.Habita = window.Habita || {};
 
@@ -6,10 +6,10 @@ window.Habita = window.Habita || {};
   let tasks = app.loadTasks();
 
   const QUADRANT_NAMES = {
-    1: 'Focus',
-    2: 'Backburner',
-    3: 'Fit In',
-    4: 'Goals',
+    1: 'Focus',       // top-left,  red
+    2: 'Goals',       // top-right, blue
+    3: 'Fit In',      // bottom-left, yellow
+    4: 'Backburner',  // bottom-right, green
   };
 
   /** Smallest schedulable slice, in minutes. Blocks snap to this. */

@@ -1,4 +1,4 @@
-// js/theme.js
+// features/shared/theme.js
 window.Habita = window.Habita || {};
 
 (function(app) {

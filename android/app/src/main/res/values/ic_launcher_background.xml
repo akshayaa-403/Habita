@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- White shows through the thin gaps between the rounded colour tiles,
+         matching the Habita logo. -->
     <color name="ic_launcher_background">#FFFFFF</color>
 </resources>

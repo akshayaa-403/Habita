@@ -1,4 +1,4 @@
-// js/timeline.js
+// features/timeline/timeline.js
 // Day timeline: drag tasks out of the tray onto the clock, move and resize the
 // blocks, and see them alongside the events already in the phone's calendar.
 //

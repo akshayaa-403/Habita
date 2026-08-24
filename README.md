@@ -73,12 +73,15 @@ npm install
 
 ### Run in a browser
 
-The web app is in `www/` and needs no build step:
+The app is authored in `src/` and copied into `www/` (Capacitor's web dir) by a
+tiny build step — no bundler, just a file copy:
 
 ```bash
-npm start                      # → npx serve www
-python -m http.server 8000 -d www    # or anything else static
+npm start                      # → npm run build, then npx serve www
+npm run build                  # copy src/ → www/ on its own
 ```
+
+`www/` is generated, so edit files under `src/` and re-run the build (or `npm start`).
 
 The matrix and the timeline both work in a browser; only the device-calendar sync
 is unavailable there, and the day view says so instead of failing.
@@ -117,19 +120,25 @@ overlap layout, and the migration of tasks saved by earlier versions.
 
 ```
 Habita/
-├── www/                          # Web app (served as-is / copied into the native shell)
+├── src/                          # Web app source — edit here (grouped by feature)
 │   ├── index.html                # Matrix, timeline, task list, bottom nav
-│   ├── css/styles.css            # Themes, quadrant grid, timeline, responsive layout
-│   └── js/
-│       ├── main.js               # Bootstraps theme, UI, rings and the timeline
-│       ├── theme.js              # Dark mode, localStorage, system preference
-│       ├── storage.js            # Load/save, id generation, shape migration
-│       ├── tasks.js              # CRUD, completion, reordering, scheduling, haptics
-│       ├── calendar.js           # Bridge to the native plugin, with a browser fallback
-│       ├── timeline.js           # Day grid, drag/move/resize, auto-placement
-│       ├── ui.js                 # Task lists, inline editing, navigation
-│       └── progress.js           # SVG progress rings
-├── android/
+│   ├── styles/styles.css         # Themes, quadrant grid, timeline, responsive layout
+│   ├── assets/                   # Images/icons bundled into the web app
+│   ├── app/
+│   │   └── main.js               # Bootstraps theme, UI, rings and the timeline
+│   ├── core/                     # Platform + data layer
+│   │   ├── storage.js            # Load/save, id generation, shape migration
+│   │   └── calendar.js           # Bridge to the native plugin, with a browser fallback
+│   └── features/
+│       ├── tasks/tasks.js        # CRUD, completion, reordering, scheduling, haptics
+│       ├── matrix/progress.js    # SVG progress rings
+│       ├── timeline/timeline.js  # Day grid, drag/move/resize, auto-placement
+│       └── shared/
+│           ├── theme.js          # Dark mode, localStorage, system preference
+│           └── ui.js             # Task lists, inline editing, navigation
+├── scripts/build.js              # Copies src/ → www/ (run before cap sync / tests)
+├── www/                          # Generated web build output (git-ignored)
+├── android/                      # Native Android project (Capacitor)
 │   └── app/src/main/java/com/habita/app/
 │       ├── MainActivity.java     # Registers the local plugin before the bridge starts
 │       └── CalendarPlugin.java   # CalendarContract read/write

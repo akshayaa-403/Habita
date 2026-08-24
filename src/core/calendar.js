@@ -1,4 +1,4 @@
-// js/calendar.js
+// core/calendar.js
 // Bridge to the phone's calendar, with a graceful no-op fallback in a browser.
 //
 // Every scheduled task owns a real event in one of the user's own calendars, so
@@ -15,10 +15,10 @@ window.Habita = window.Habita || {};
   // duplicated here because getComputedStyle would return the *current* theme's
   // value, and a calendar event's colour should not depend on dark mode.
   const QUADRANT_COLORS = {
-    1: '#EE544F', // Focus
-    2: '#01C0A6', // Backburner
-    3: '#FBB028', // Fit In
-    4: '#00B9D5', // Goals
+    1: '#EE544F', // Focus      — red
+    2: '#00B9D5', // Goals      — blue
+    3: '#FBB028', // Fit In     — yellow
+    4: '#01C0A6', // Backburner — green
   };
 
   let settings = loadSettings();

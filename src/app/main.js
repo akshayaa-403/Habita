@@ -1,4 +1,4 @@
-// js/main.js
+// app/main.js
 (function() {
   // Wait for DOM to be ready
   if (document.readyState === 'loading') {

@@ -1,14 +1,14 @@
-// js/ui.js
+// features/shared/ui.js
 // View layer: renders the task list, wires drag & drop, inline editing and navigation.
 window.Habita = window.Habita || {};
 
 (function (app) {
   // Quadrant labels and CSS colour variables (see index.html / styles.css).
   const LABELS = {
-    1: 'Focus',       // Urgent & Important
-    2: 'Backburner',  // Not Urgent & Important
-    3: 'Fit In',      // Urgent & Not Important
-    4: 'Goals'        // Not Urgent & Not Important
+    1: 'Focus',       // Urgent & Important        — top-left,  red
+    2: 'Goals',       // Not Urgent & Important     — top-right, blue
+    3: 'Fit In',      // Urgent & Not Important     — bottom-left, yellow
+    4: 'Backburner'   // Not Urgent & Not Important — bottom-right, green
   };
   const COLOR_VAR = { 1: '--q1', 2: '--q2', 3: '--q3', 4: '--q4' };
   const LIGHT_VAR = { 1: '--q1-light', 2: '--q2-light', 3: '--q3-light', 4: '--q4-light' };
@@ -355,6 +355,8 @@ window.Habita = window.Habita || {};
       startY = e.clientY;
       plusButton.setPointerCapture(e.pointerId);
       plusButton.classList.add('dragging');
+      // Shrink the grid and reveal the seam axis labels the moment it's pressed.
+      matrixGrid.classList.add('pressing');
     });
 
     plusButton.addEventListener('pointermove', (e) => {
@@ -363,6 +365,13 @@ window.Habita = window.Habita || {};
       const dy = e.clientY - startY;
       if (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD) moved = true;
       plusButton.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+
+      // Ike-style cue: once dragging, fade the non-target quadrants to pale tints
+      // and keep the one under the pointer vivid.
+      if (moved) {
+        matrixGrid.classList.add('dragging');
+        highlightTarget(quadrantAtPoint(e.clientX, e.clientY));
+      }
     });
 
     plusButton.addEventListener('pointerup', (e) => {
@@ -371,6 +380,7 @@ window.Habita = window.Habita || {};
       plusButton.classList.remove('dragging');
       plusButton.releasePointerCapture(e.pointerId);
       plusButton.style.transform = ''; // always snap back to centre
+      clearDragCue();
 
       // A tap (no real movement) shouldn't fling a task into a quadrant.
       if (!moved) return;
@@ -378,6 +388,27 @@ window.Habita = window.Habita || {};
       const quadrant = quadrantAtPoint(e.clientX, e.clientY);
       if (quadrant) app.openTaskList(quadrant, true);
     });
+
+    // Safety net: if the gesture is cancelled, drop the visual cue.
+    plusButton.addEventListener('pointercancel', () => {
+      isPointerDown = false;
+      plusButton.classList.remove('dragging');
+      plusButton.style.transform = '';
+      clearDragCue();
+    });
+  }
+
+  // Mark the quadrant under the pointer as the drop target (or none).
+  function highlightTarget(quadrant) {
+    document.querySelectorAll('.quadrant').forEach((q) => {
+      q.classList.toggle('drag-target', parseInt(q.dataset.quadrant, 10) === quadrant);
+    });
+  }
+
+  function clearDragCue() {
+    matrixGrid.classList.remove('dragging', 'pressing');
+    document.querySelectorAll('.quadrant.drag-target')
+      .forEach((q) => q.classList.remove('drag-target'));
   }
 
   // Map a screen point to a quadrant number, or null if outside the grid.
