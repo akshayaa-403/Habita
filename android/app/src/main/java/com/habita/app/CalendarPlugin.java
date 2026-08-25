@@ -160,6 +160,50 @@ public class CalendarPlugin extends Plugin {
         call.resolve(result);
     }
 
+    /**
+     * Every writable calendar on the device, so the user can pick which one
+     * Habita blocks time in. Same shape as {@link #getDefaultCalendar}, primary
+     * first then visible ones, for a sensible order in the picker.
+     */
+    @PluginMethod
+    public void listCalendars(PluginCall call) {
+        if (!requireAccess(call)) return;
+
+        ContentResolver resolver = getContext().getContentResolver();
+        JSArray calendars = new JSArray();
+
+        try (Cursor cursor = resolver.query(
+            CalendarContract.Calendars.CONTENT_URI, CALENDAR_FIELDS,
+            null, null,
+            CalendarContract.Calendars.IS_PRIMARY + " DESC, "
+                + CalendarContract.Calendars.VISIBLE + " DESC, "
+                + CalendarContract.Calendars.CALENDAR_DISPLAY_NAME + " ASC"
+        )) {
+            while (cursor != null && cursor.moveToNext()) {
+                boolean writable =
+                    cursor.getInt(6) >= CalendarContract.Calendars.CAL_ACCESS_CONTRIBUTOR;
+                if (!writable) continue;
+
+                JSObject cal = new JSObject();
+                cal.put("id", String.valueOf(cursor.getLong(0)));
+                cal.put("name", cursor.getString(1));
+                cal.put("accountName", cursor.getString(2));
+                cal.put("color", colorToHex(cursor.getInt(5)));
+                cal.put("primary", cursor.getInt(7) == 1);
+                cal.put("writable", true);
+                cal.put("visible", cursor.getInt(8) == 1);
+                calendars.put(cal);
+            }
+        } catch (SecurityException e) {
+            call.reject("Calendar permission was revoked", "PERMISSION_DENIED", e);
+            return;
+        }
+
+        JSObject result = new JSObject();
+        result.put("calendars", calendars);
+        call.resolve(result);
+    }
+
     // --------------------------------------------------------------------- events
 
     /**
@@ -272,9 +316,23 @@ public class CalendarPlugin extends Plugin {
 
         applyColor(values, calendarId, call.getString("color"));
 
+        // Attribute the event to the calendar's own account so the sync adapter
+        // (Google, Exchange, …) uploads it instead of leaving an unsynced local
+        // row. Account name/type are provider-only columns: the ONLY legal way to
+        // set them is as query params on a sync-adapter URI. We do NOT set a
+        // _SYNC_ID, so the row is still born DIRTY and Google uploads it normally.
+        Uri insertUri = CalendarContract.Events.CONTENT_URI;
+        String[] account = accountForCalendar(calendarId);
+        if (account != null) {
+            insertUri = CalendarContract.Events.CONTENT_URI.buildUpon()
+                .appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
+                .appendQueryParameter(CalendarContract.Events.ACCOUNT_NAME, account[0])
+                .appendQueryParameter(CalendarContract.Events.ACCOUNT_TYPE, account[1])
+                .build();
+        }
+
         try {
-            Uri uri = getContext().getContentResolver()
-                .insert(CalendarContract.Events.CONTENT_URI, values);
+            Uri uri = getContext().getContentResolver().insert(insertUri, values);
             if (uri == null || uri.getLastPathSegment() == null) {
                 call.reject("The calendar provider refused the event", "INSERT_FAILED");
                 return;
@@ -496,6 +554,37 @@ public class CalendarPlugin extends Plugin {
         if (!TextUtils.isEmpty(description)) out.append(description).append("\n\n");
         out.append(taggedMarker()).append(taskId == null ? "" : taskId).append("]");
         return out.toString();
+    }
+
+    /**
+     * The [accountName, accountType] a calendar belongs to, or null if unknown.
+     *
+     * Events created by a normal app must carry the target calendar's account so
+     * the Google (or other) sync adapter recognises them as its own and uploads
+     * them. Without it the row is created locally, stays DIRTY, and never leaves
+     * the phone -- exactly the "event never appears in Google Calendar" symptom.
+     */
+    private String[] accountForCalendar(String calendarId) {
+        if (TextUtils.isEmpty(calendarId)) return null;
+        try (Cursor cursor = getContext().getContentResolver().query(
+            ContentUris.withAppendedId(
+                CalendarContract.Calendars.CONTENT_URI, Long.parseLong(calendarId)
+            ),
+            new String[] {
+                CalendarContract.Calendars.ACCOUNT_NAME,
+                CalendarContract.Calendars.ACCOUNT_TYPE
+            },
+            null, null, null
+        )) {
+            if (cursor != null && cursor.moveToFirst()) {
+                String name = cursor.getString(0);
+                String type = cursor.getString(1);
+                if (name != null && type != null) return new String[] { name, type };
+            }
+        } catch (SecurityException | NumberFormatException e) {
+            return null;
+        }
+        return null;
     }
 
     /** The calendar an existing event lives in, or null if it has gone. */

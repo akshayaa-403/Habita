@@ -92,6 +92,18 @@ window.Habita = window.Habita || {};
     persistSettings();
   };
 
+  /** Every writable calendar on the device, for the settings picker. [] in a browser. */
+  app.listCalendars = async function () {
+    if (!app.isNativeCalendar() || !permissionGranted) return [];
+    try {
+      const { calendars } = await callPlugin('listCalendars');
+      return calendars || [];
+    } catch (err) {
+      console.warn('Habita: could not list calendars.', err);
+      return [];
+    }
+  };
+
   /**
    * Ask for calendar permission and pick a target calendar.
    *

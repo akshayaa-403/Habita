@@ -24,6 +24,32 @@
     </button>
   </header>
 
+  <!-- Settings drawer (opened by the hamburger) -->
+  <div class="drawer-overlay" id="drawerOverlay" hidden></div>
+  <aside class="drawer" id="drawer" aria-hidden="true" aria-label="Settings">
+    <div class="drawer-head">
+      <span class="drawer-title">Settings</span>
+      <button type="button" class="drawer-close" id="drawerClose" aria-label="Close settings">×</button>
+    </div>
+
+    <section class="drawer-section">
+      <h2 class="drawer-section-title">Calendar</h2>
+      <p class="drawer-hint" id="calendarSyncHint"></p>
+
+      <button type="button" class="drawer-action" id="calendarConnectBtn" hidden>Connect calendar</button>
+
+      <label class="drawer-row" id="calendarSyncRow" hidden>
+        <span>Sync tasks to calendar</span>
+        <input type="checkbox" id="calendarSyncSwitch" class="drawer-switch">
+      </label>
+
+      <label class="drawer-row drawer-row-stack" id="calendarPickRow" hidden>
+        <span>Write blocks to</span>
+        <select id="calendarSelect" class="drawer-select"></select>
+      </label>
+    </section>
+  </aside>
+
   <!-- Matrix View -->
   <div class="matrix-view" id="matrixView">
     <div class="matrix-grid" id="matrixGrid">
@@ -142,6 +168,7 @@
   <script src="features/tasks/tasks.js"></script>
   <script src="features/matrix/progress.js"></script>
   <script src="features/shared/theme.js"></script>
+  <script src="features/shared/drawer.js"></script>
   <script src="features/timeline/timeline.js"></script>
   <script src="features/shared/ui.js"></script>
   <script src="app/main.js"></script>
