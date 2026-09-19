@@ -10,6 +10,7 @@ www/
 
 # IDE
 .vscode/
+.claude/
 .idea/
 *.sublime-project
 *.sublime-workspace
