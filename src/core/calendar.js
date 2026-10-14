@@ -47,34 +47,14 @@ window.Habita = window.Habita || {};
     }
   }
 
-  /**
-   * Invoke a native plugin method.
-   *
-   * Two call paths exist depending on how the app was loaded: the bridge exposes
-   * ready-made proxies under Capacitor.Plugins when a JS wrapper registered the
-   * plugin, and Capacitor.nativePromise otherwise. Trying both keeps this
-   * working whether or not @capacitor/core is bundled into the page.
-   */
+  // Callers check isNativeCalendar() first, so Capacitor is always present here.
   function callPlugin(method, options = {}) {
-    const cap = window.Capacitor;
-    if (!cap) return Promise.reject(new Error('Not running inside Capacitor'));
-
-    const plugin = cap.Plugins && cap.Plugins[PLUGIN];
-    if (plugin && typeof plugin[method] === 'function') {
-      return Promise.resolve(plugin[method](options));
-    }
-    if (typeof cap.nativePromise === 'function') {
-      return cap.nativePromise(PLUGIN, method, options);
-    }
-    return Promise.reject(new Error(`${PLUGIN}.${method} is unavailable`));
+    return window.Capacitor.nativePromise(PLUGIN, method, options);
   }
 
   /** True when running in the Android shell rather than a desktop browser. */
   app.isNativeCalendar = function () {
-    const cap = window.Capacitor;
-    return Boolean(cap && (typeof cap.isNativePlatform === 'function'
-      ? cap.isNativePlatform()
-      : cap.isNative));
+    return Boolean(window.Capacitor?.isNativePlatform?.());
   };
 
   app.calendarSettings = function () {

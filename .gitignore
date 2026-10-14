@@ -5,7 +5,7 @@ yarn-error.log
 dist/
 build/
 
-# Generated web build output (produced from src/ by scripts/build.js)
+# Output of the old src/ -> www/ copy step; webDir is now src/
 www/
 
 # IDE

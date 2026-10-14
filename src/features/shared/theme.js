@@ -8,8 +8,6 @@ window.Habita = window.Habita || {};
 
   app.applyDarkMode = function(enabled) {
     const toggle = document.getElementById('darkModeToggle');
-    if (!toggle) return;
-
     if (enabled) {
       document.body.classList.add('dark-mode');
       toggle.querySelector('svg').innerHTML = moonSVG;
@@ -23,8 +21,6 @@ window.Habita = window.Habita || {};
 
   app.initTheme = function() {
     const toggle = document.getElementById('darkModeToggle');
-    if (!toggle) return;
-
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const saved = localStorage.getItem(DARK_MODE_KEY);
     const darkMode = saved !== null ? saved === 'true' : prefersDark;

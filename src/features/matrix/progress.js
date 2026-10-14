@@ -5,8 +5,6 @@ window.Habita = window.Habita || {};
   app.renderProgressRings = function() {
     for (let q = 1; q <= 4; q++) {
       const container = document.getElementById('progress' + q);
-      if (!container) continue;
-
       const { total, completed, remaining } = app.getProgress(q);
       const r = 54;
       const circumference = 2 * Math.PI * r;

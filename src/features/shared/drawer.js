@@ -4,20 +4,7 @@
 window.Habita = window.Habita || {};
 
 (function (app) {
-  let drawer, overlay, syncHint, connectBtn, syncRow, syncSwitch, pickRow, select;
-
-  function open() {
-    drawer.classList.add('open');
-    drawer.setAttribute('aria-hidden', 'false');
-    overlay.hidden = false;
-    renderCalendarSection();
-  }
-
-  function close() {
-    drawer.classList.remove('open');
-    drawer.setAttribute('aria-hidden', 'true');
-    overlay.hidden = true;
-  }
+  let drawer, syncHint, connectBtn, syncRow, syncSwitch, pickRow, select;
 
   // Show the right controls for the current calendar state (browser / not
   // connected / connected), and fill the picker.
@@ -60,21 +47,18 @@ window.Habita = window.Habita || {};
 
   app.initDrawer = function () {
     drawer = document.getElementById('drawer');
-    overlay = document.getElementById('drawerOverlay');
     syncHint = document.getElementById('calendarSyncHint');
     connectBtn = document.getElementById('calendarConnectBtn');
     syncRow = document.getElementById('calendarSyncRow');
     syncSwitch = document.getElementById('calendarSyncSwitch');
     pickRow = document.getElementById('calendarPickRow');
     select = document.getElementById('calendarSelect');
-    if (!drawer) return;
 
-    document.getElementById('menuBtn').addEventListener('click', open);
-    document.getElementById('drawerClose').addEventListener('click', close);
-    overlay.addEventListener('click', close);
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && drawer.classList.contains('open')) close();
+    document.getElementById('menuBtn').addEventListener('click', () => {
+      drawer.showModal();
+      renderCalendarSection();
     });
+    document.getElementById('drawerClose').addEventListener('click', () => drawer.close());
 
     connectBtn.addEventListener('click', async () => {
       const ok = await app.initCalendar();

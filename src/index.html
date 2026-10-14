@@ -25,8 +25,7 @@
   </header>
 
   <!-- Settings drawer (opened by the hamburger) -->
-  <div class="drawer-overlay" id="drawerOverlay" hidden></div>
-  <aside class="drawer" id="drawer" aria-hidden="true" aria-label="Settings">
+  <dialog class="drawer" id="drawer" aria-label="Settings" closedby="any">
     <div class="drawer-head">
       <span class="drawer-title">Settings</span>
       <button type="button" class="drawer-close" id="drawerClose" aria-label="Close settings">×</button>
@@ -48,7 +47,7 @@
         <select id="calendarSelect" class="drawer-select"></select>
       </label>
     </section>
-  </aside>
+  </dialog>
 
   <!-- Matrix View -->
   <div class="matrix-view" id="matrixView">

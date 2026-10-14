@@ -3,16 +3,6 @@
 window.Habita = window.Habita || {};
 
 (function (app) {
-  // Quadrant labels and CSS colour variables (see index.html / styles.css).
-  const LABELS = {
-    1: 'Focus',       // Urgent & Important        — top-left,  red
-    2: 'Goals',       // Not Urgent & Important     — top-right, blue
-    3: 'Fit In',      // Urgent & Not Important     — bottom-left, yellow
-    4: 'Backburner'   // Not Urgent & Not Important — bottom-right, green
-  };
-  const COLOR_VAR = { 1: '--q1', 2: '--q2', 3: '--q3', 4: '--q4' };
-  const LIGHT_VAR = { 1: '--q1-light', 2: '--q2-light', 3: '--q3-light', 4: '--q4-light' };
-
   // Internal state
   let currentQuadrant = null;
   let currentView = 'matrix';
@@ -40,9 +30,14 @@ window.Habita = window.Habita || {};
 
     initQuadrantClicks();
     initPlusButtonDrag();
-    initBackButton();
-    initAddTaskButton();
-    initBottomNav();
+    backBtn.addEventListener('click', closeTaskList);
+    addTaskBtn.addEventListener('click', () => {
+      if (currentQuadrant) addTaskAndEdit(currentQuadrant);
+    });
+    bottomNav.addEventListener('click', (event) => {
+      const tab = event.target.closest('.nav-tab');
+      if (tab) app.showView(tab.dataset.view);
+    });
   };
 
   // ----- Top-level views -----
@@ -78,18 +73,8 @@ window.Habita = window.Habita || {};
     }
   };
 
-  function initBottomNav() {
-    bottomNav.addEventListener('click', (event) => {
-      const tab = event.target.closest('.nav-tab');
-      if (tab) app.showView(tab.dataset.view);
-    });
-  }
-
   // ----- Splash animation -----
   function playSplashAnimation(quadrantColorVar, callback) {
-    // If the overlay is missing, still run the callback so navigation never stalls.
-    if (!splashOverlay) { if (callback) callback(); return; }
-
     splashOverlay.style.display = 'block';
     splashOverlay.style.background = `var(${quadrantColorVar})`;
     splashOverlay.style.animation = 'none';
@@ -269,7 +254,6 @@ window.Habita = window.Habita || {};
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', '');
     this.classList.add('dragging');
-    setTimeout(() => { this.style.opacity = '0.4'; }, 0);
   }
 
   function dragOver(e) {
@@ -294,7 +278,7 @@ window.Habita = window.Habita || {};
   }
 
   function dragEnd() {
-    this.style.opacity = '1';
+    this.classList.remove('dragging');
     document.querySelectorAll('.task-item').forEach((i) => i.classList.remove('drag-over'));
     draggedItem = null;
     draggedIndex = null;
@@ -316,9 +300,9 @@ window.Habita = window.Habita || {};
   app.openTaskList = function (quadrant, quickAdd = false) {
     currentQuadrant = quadrant;
 
-    playSplashAnimation(COLOR_VAR[quadrant], () => {
-      taskListPage.style.backgroundColor = `var(${LIGHT_VAR[quadrant]})`;
-      taskListTitle.textContent = LABELS[quadrant];
+    playSplashAnimation(`--q${quadrant}`, () => {
+      taskListPage.style.backgroundColor = `var(--q${quadrant}-light)`;
+      taskListTitle.textContent = app.quadrantName(quadrant);
       renderTaskList(quadrant);
       matrixView.style.display = 'none';
       taskListPage.classList.add('active');
@@ -339,8 +323,6 @@ window.Habita = window.Habita || {};
 
   // ----- Center draggable plus button -----
   function initPlusButtonDrag() {
-    if (!plusButton) return;
-
     const DRAG_THRESHOLD = 8; // px of movement before a press counts as a drag
     let isPointerDown = false;
     let moved = false;
@@ -434,16 +416,6 @@ window.Habita = window.Habita || {};
           open();
         }
       });
-    });
-  }
-
-  function initBackButton() {
-    backBtn.addEventListener('click', closeTaskList);
-  }
-
-  function initAddTaskButton() {
-    addTaskBtn.addEventListener('click', () => {
-      if (currentQuadrant) addTaskAndEdit(currentQuadrant);
     });
   }
 })(window.Habita);

@@ -308,6 +308,7 @@ window.Habita = window.Habita || {};
       taskId,
       quadrant: found.quadrant,
       block,
+      startX: event.clientX,
       startY: event.clientY,
       originalStart: found.task.start,
       originalDuration: found.task.duration,
@@ -351,7 +352,7 @@ window.Habita = window.Habita || {};
     if (!drag) return;
 
     const dy = event.clientY - drag.startY;
-    const dx = (event.clientX || 0) - (drag.startX || 0);
+    const dx = event.clientX - drag.startX;
     if (!drag.moved && Math.abs(dy) < DRAG_THRESHOLD && Math.abs(dx) < DRAG_THRESHOLD) return;
     drag.moved = true;
     event.preventDefault();
@@ -490,13 +491,12 @@ window.Habita = window.Habita || {};
     // flowing to the origin element, and this way one handler covers both.
     document.addEventListener('pointermove', onPointerMove, { passive: false });
     document.addEventListener('pointerup', onPointerUp);
-    document.addEventListener('pointercancel', (event) => {
+    document.addEventListener('pointercancel', () => {
       if (state.drag && state.drag.ghost) state.drag.ghost.remove();
       if (state.drag && state.drag.block) state.drag.block.classList.remove('dragging');
       state.drag = null;
       hideTooltip();
       render();
-      void event;
     });
 
     // Keyboard: nudge a selected block without a pointer.
@@ -583,14 +583,13 @@ window.Habita = window.Habita || {};
 
     // short name -> element id
     const elements = {
-      view: 'timelineView', scroller: 'timelineScroller', grid: 'timelineGrid', hours: 'hourLines',
+      scroller: 'timelineScroller', grid: 'timelineGrid', hours: 'hourLines',
       eventsLane: 'deviceEventsLane', tasksLane: 'taskBlocksLane', nowLine: 'nowLine',
       tray: 'timelineTray', trayCount: 'trayCount', dayLabel: 'dayLabel', dayDate: 'dayDate',
       prevDay: 'prevDayBtn', nextDay: 'nextDayBtn', todayBtn: 'todayBtn',
       calendarStatus: 'calendarStatus', tooltip: 'dragTooltip', emptyHint: 'timelineEmptyHint',
     };
     for (const [key, id] of Object.entries(elements)) el[key] = document.getElementById(id);
-    if (!el.view) return;
 
     renderHourGrid();
     initPointerHandlers();

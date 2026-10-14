@@ -1,7 +1,7 @@
 /**
  * Headless test for the day timeline, run with `npm test`.
  *
- * Loads www/index.html in jsdom and drives the real UI rather than calling
+ * Loads src/index.html in jsdom and drives the real UI rather than calling
  * internals: drag a chip out of the tray onto an hour, move the block, resize
  * it, tick it off, unschedule it. Assertions are made against the persisted
  * task model, so the pixel-to-time maths, the rendering and the storage
@@ -17,7 +17,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
 
-const WWW = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'www');
+const WWW = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'src');
 const PX_PER_HOUR = 64;
 const GRID_HEIGHT = 24 * PX_PER_HOUR;
 

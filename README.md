@@ -73,15 +73,11 @@ npm install
 
 ### Run in a browser
 
-The app is authored in `src/` and copied into `www/` (Capacitor's web dir) by a
-tiny build step — no bundler, just a file copy:
+There is no build step: `src/` is Capacitor's web dir and is served as-is.
 
 ```bash
-npm start                      # → npm run build, then npx serve www
-npm run build                  # copy src/ → www/ on its own
+npm start                      # npx serve src
 ```
-
-`www/` is generated, so edit files under `src/` and re-run the build (or `npm start`).
 
 The matrix and the timeline both work in a browser; only the device-calendar sync
 is unavailable there, and the day view says so instead of failing.
@@ -109,7 +105,7 @@ with Android Studio works.
 npm test
 ```
 
-Loads `www/index.html` in jsdom and drives the real UI — dragging a chip out of
+Loads `src/index.html` in jsdom and drives the real UI — dragging a chip out of
 the tray onto an hour, moving the block, resizing it, ticking it off, unscheduling
 it — then asserts on the persisted model. Covers the pixel-to-time maths, the
 overlap layout, and the migration of tasks saved by earlier versions.
@@ -136,8 +132,6 @@ Habita/
 │       └── shared/
 │           ├── theme.js          # Dark mode, localStorage, system preference
 │           └── ui.js             # Task lists, inline editing, navigation
-├── scripts/build.js              # Copies src/ → www/ (run before cap sync / tests)
-├── www/                          # Generated web build output (git-ignored)
 ├── android/                      # Native Android project (Capacitor)
 │   └── app/src/main/java/com/habita/app/
 │       ├── MainActivity.java     # Registers the local plugin before the bridge starts

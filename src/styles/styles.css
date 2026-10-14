@@ -155,33 +155,29 @@ body {
 .menu-btn svg { fill: none; }
 
 /* ========== Settings drawer ========== */
-.drawer-overlay {
-  position: fixed;
-  inset: 0;
+.drawer::backdrop {
   background: var(--overlay);
-  z-index: 900;
   animation: fadeIn 0.2s ease;
 }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideIn { from { transform: translateX(-100%); } }
 
 .drawer {
-  position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
+  inset: 0 auto 0 0;
+  margin: 0;
+  border: 0;
+  max-height: none;
+  height: 100%;
   width: min(84vw, 320px);
+  color: inherit;
   background: var(--surface);
-  z-index: 1000;
   box-shadow: var(--shadow);
   padding: calc(16px + env(safe-area-inset-top, 0)) 18px 18px;
-  transform: translateX(-100%);
-  transition: transform 0.25s ease;
-  display: flex;
   flex-direction: column;
   gap: 18px;
   overflow-y: auto;
 }
-.drawer.open { transform: translateX(0); }
+.drawer[open] { display: flex; animation: slideIn 0.25s ease; }
 
 .drawer-head { display: flex; align-items: center; justify-content: space-between; }
 .drawer-title {
@@ -571,6 +567,7 @@ body.dark-mode .q4 .progress-ring-disc { fill: var(--q4-disc); }
   border-radius: 8px;
   margin-bottom: 4px;
 }
+.task-item.dragging { opacity: 0.4; }
 .task-item.drag-over {
   background: var(--btn-hover);
   outline: 2px dashed var(--text-secondary);

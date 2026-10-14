@@ -19,11 +19,8 @@ window.Habita = window.Habita || {};
     app.saveTasks(tasks);
   }
 
-  // Safely fetch (and lazily create) the list for a quadrant.
   function listFor(quadrant) {
-    const key = 'q' + quadrant;
-    if (!Array.isArray(tasks[key])) tasks[key] = [];
-    return tasks[key];
+    return tasks['q' + quadrant];
   }
 
   // Best-effort light haptic feedback: native Capacitor plugin when available,
@@ -207,11 +204,8 @@ window.Habita = window.Habita || {};
    * allowed calendar access still end up as real events.
    */
   app.syncAllToCalendar = function () {
-    app.getAllTasks()
-      .filter((task) => task.start && !task.eventId)
-      .forEach((entry) => {
-        const found = app.findTask(entry.id);
-        if (found) syncToCalendar(found.task, found.quadrant);
-      });
+    for (let q = 1; q <= 4; q++) {
+      listFor(q).filter((t) => t.start && !t.eventId).forEach((t) => syncToCalendar(t, q));
+    }
   };
 })(window.Habita);
