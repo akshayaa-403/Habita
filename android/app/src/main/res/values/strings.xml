@@ -2,6 +2,6 @@
 <resources>
     <string name="app_name">Habita</string>
     <string name="title_activity_main">Habita</string>
-    <string name="package_name">com.habita.app</string>
-    <string name="custom_url_scheme">com.habita.app</string>
+    <string name="package_name">io.github.akshayaa403.habita</string>
+    <string name="custom_url_scheme">io.github.akshayaa403.habita</string>
 </resources>
