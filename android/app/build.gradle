@@ -15,8 +15,23 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            // Supplied only by the Release workflow (tag-restricted `release`
+            // environment secrets). Absent locally and in PR CI, so those
+            // builds stay unsigned and need no secrets.
+            def ks = System.getenv("HABITA_KEYSTORE")
+            if (ks) {
+                storeFile file(ks)
+                storePassword System.getenv("HABITA_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("HABITA_KEY_ALIAS")
+                keyPassword System.getenv("HABITA_KEY_PASSWORD")
+            }
+        }
+    }
     buildTypes {
         release {
+            if (System.getenv("HABITA_KEYSTORE")) signingConfig signingConfigs.release
             // CI asserts all three on the built APK, not just here.
             debuggable false
             minifyEnabled true
