@@ -1,0 +1,35 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    name: Android CI   # the ruleset requires this exact check name
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm test
+      - run: npx cap sync android
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 21 }
+      - uses: gradle/actions/setup-gradle@v4   # also validates the wrapper checksum
+      - name: Build release (unsigned; includes lintVitalRelease)
+        working-directory: android
+        run: ./gradlew assembleRelease
+      - name: Release artifact gates
+        run: |
+          APK=android/app/build/outputs/apk/release/app-release-unsigned.apk
+          AA="$ANDROID_HOME/cmdline-tools/latest/bin/apkanalyzer"
+          test "$("$AA" manifest debuggable "$APK")" = "false"
+          test "$("$AA" manifest application-id "$APK")" = "io.github.akshayaa403.habita"
+          test -s android/app/build/outputs/mapping/release/mapping.txt
+          ! "$AA" manifest permissions "$APK" | grep -q 'android.permission.INTERNET'
