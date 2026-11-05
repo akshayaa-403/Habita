@@ -97,7 +97,9 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 ```
 
 Requires the Android SDK (compileSdk 36, minSdk 24) and a JDK 21 — the one bundled
-with Android Studio works.
+with Android Studio works. The JDK is a per-machine setting: if Gradle picks an
+unsuitable one, set `org.gradle.java.home` in `~/.gradle/gradle.properties`, never
+in the project's `android/gradle.properties`.
 
 ### Tests
 
