@@ -4,7 +4,7 @@ android {
     namespace = "com.habita.app"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.habita.app"
+        applicationId "io.github.akshayaa403.habita"   // permanent once published
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
