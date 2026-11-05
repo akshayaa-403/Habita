@@ -32,4 +32,6 @@ jobs:
           test "$("$AA" manifest debuggable "$APK")" = "false"
           test "$("$AA" manifest application-id "$APK")" = "io.github.akshayaa403.habita"
           test -s android/app/build/outputs/mapping/release/mapping.txt
-          ! "$AA" manifest permissions "$APK" | grep -q 'android.permission.INTERNET'
+          if "$AA" manifest permissions "$APK" | grep -q 'android.permission.INTERNET'; then
+            echo "::error::Release APK requests INTERNET; Habita must stay offline"; exit 1
+          fi
