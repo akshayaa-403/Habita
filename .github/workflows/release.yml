@@ -1,0 +1,52 @@
+name: Release
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write   # create the GitHub Release
+jobs:
+  release:
+    name: Signed release
+    runs-on: ubuntu-latest
+    environment: release   # signing secrets live here; deployable from v* tags only
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tag must equal versionName
+        run: grep -q "versionName \"${GITHUB_REF_NAME#v}\"" android/app/build.gradle
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm test
+      - run: npx cap sync android
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 21 }
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build signed APK + AAB
+        working-directory: android
+        env:
+          KEYSTORE_B64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+          HABITA_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          HABITA_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          HABITA_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+        run: |
+          test -n "$KEYSTORE_B64"
+          export HABITA_KEYSTORE="$RUNNER_TEMP/release.jks"
+          echo "$KEYSTORE_B64" | base64 -d > "$HABITA_KEYSTORE"
+          ./gradlew assembleRelease bundleRelease
+      - name: Verify artifact
+        env:
+          EXPECTED_CERT: ${{ vars.RELEASE_CERT_SHA256 }}
+        run: |
+          test -n "$EXPECTED_CERT"   # an empty variable would make the grep below match anything
+          APK=android/app/build/outputs/apk/release/app-release.apk
+          BT="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)"
+          test "$("$ANDROID_HOME/cmdline-tools/latest/bin/apkanalyzer" manifest debuggable "$APK")" = "false"
+          "$BT/apksigner" verify --print-certs "$APK" | grep -q "SHA-256 digest: $EXPECTED_CERT"
+      - name: Publish GitHub Release
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: |
+          V="$GITHUB_REF_NAME"
+          cp android/app/build/outputs/apk/release/app-release.apk "habita-$V.apk"
+          cp android/app/build/outputs/bundle/release/app-release.aab "habita-$V.aab"
+          PRE=""; case "$V" in *-*) PRE="--prerelease";; esac
+          gh release create "$V" "habita-$V.apk" "habita-$V.aab" --verify-tag --generate-notes $PRE

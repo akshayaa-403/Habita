@@ -114,6 +114,30 @@ overlap layout, and the migration of tasks saved by earlier versions.
 
 ---
 
+## Contributing and Releasing
+
+`main` only changes through pull requests (GitHub Flow): branch, commit, open a
+PR, let **Android CI** and CodeQL pass, squash-merge. CI builds the unsigned
+release APK and fails if it is debuggable, unminified, has the wrong application
+ID, or requests the internet permission.
+
+To release version `X.Y.Z`:
+
+1. On a `release/vX.Y.Z` branch, increment `versionCode` and set
+   `versionName "X.Y.Z"` in `android/app/build.gradle`; open a PR and merge it.
+2. Tag the merged commit:
+   `git switch main && git pull && git tag -a vX.Y.Z -m "Habita X.Y.Z" && git push origin vX.Y.Z`
+3. The **Release** workflow builds the APK and AAB, signs them with the key held in the
+   tag-restricted `release` environment, checks the signing certificate, and
+   publishes a GitHub Release with both files. A tag with a suffix
+   (`v1.0.0-rc.1`) becomes a pre-release.
+4. Upload the `.aab` to Google Play.
+
+The signing keystore never enters the repository (`*.jks` and `*.keystore` are git-ignored).
+Its backups live outside GitHub. See [PRIVACY.md](PRIVACY.md) for the privacy policy.
+
+---
+
 ## Project Structure
 
 ```
