@@ -35,3 +35,7 @@ Thumbs.db
 # Browser
 .history/
 .cache/
+
+# Signing material never enters the repo
+*.jks
+*.keystore
