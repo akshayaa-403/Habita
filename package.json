@@ -18,8 +18,8 @@
     "icons": "node assets/make-icon.js && node assets/build-android-icons.js"
   },
   "dependencies": {
-    "@capacitor/android": "^8.4.0",
-    "@capacitor/cli": "^8.4.0",
+    "@capacitor/android": "^8.6.0",
+    "@capacitor/cli": "^8.6.0",
     "@capacitor/core": "^8.4.0",
     "@capacitor/haptics": "^8.0.2"
   },
