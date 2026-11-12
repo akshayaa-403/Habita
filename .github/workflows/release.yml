@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: release   # signing secrets live here; deployable from v* tags only
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Tag must equal versionName
         run: grep -q "versionName \"${GITHUB_REF_NAME#v}\"" android/app/build.gradle
       - uses: actions/setup-node@v4
