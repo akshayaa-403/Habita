@@ -21,7 +21,7 @@ jobs:
       - run: npx cap sync android
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: 21 }
-      - uses: gradle/actions/setup-gradle@v4   # also validates the wrapper checksum
+      - uses: gradle/actions/setup-gradle@v6   # also validates the wrapper checksum
       - name: Build release (unsigned; includes lintVitalRelease)
         working-directory: android
         run: ./gradlew assembleRelease
